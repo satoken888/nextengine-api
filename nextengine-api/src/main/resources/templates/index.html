@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head lang="en">
 
-<title>Next Engine Java Sample</title>
+<title>ピッキングシステム</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet"
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -24,7 +24,7 @@
 			</div>
 			<div class="btn-group">
 				<button type="submit" class="btn btn-primary">検索</button>
-				<button type="reset" class="btn btn-warning">クリア</button>
+				<button id="resetButton" type="reset" class="btn btn-warning">クリア</button>
 			</div>
 		</form>
 		<table class="table table-striped">
@@ -32,6 +32,10 @@
 				<tr>
 					<th scope="col"></th>
 					<th scope="col" th:each="date : ${sendDateList}">[[${#strings.substring(date,0,10)}]]</th>
+				</tr>
+				<tr>
+					<th scope="col">出荷件数</th>
+					<th scope="col" th:each="count : ${countOrder}">[[${count}]]件</th>
 				</tr>
 			</thead>
 			<tbody class="">
@@ -63,6 +67,9 @@
 			$("#datepicker").datepicker({
 				dateFormat : 'yy-mm-dd'
 			});
+		});
+		$("#resetButton").on("click",function(){
+			$("#datepicker").val("");
 		});
 	</script>
 
