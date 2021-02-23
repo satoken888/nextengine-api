@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,29 +56,40 @@ public class PickingController extends BaseController {
 	private String showPickingData(HttpServletRequest _request,HttpServletResponse _response,Model model,@ModelAttribute PickingInputForm pickingInputForm) {
 
 		String inputPickingDate = pickingInputForm.getInputPickingDate();
+		String displayMessage = "";
+		Map<String,String> orderIdAndSendDateMap = new HashMap<>();
+		Set<String> sendDateSet = new HashSet<>();
+		Map<String,ArrayList<String>> itemQuantityMap = new HashMap<>();
+		ArrayList<Long> countOrder = new ArrayList<Long>();
 
 		//画面から入力された出荷予定日をもとに、該当の受注データをAPIから取得する
 		List<Map<String,String>> receiveOrderInfoList = getReceiveOrderInfoList(_request,inputPickingDate);
-		//取得した受注データから受注IDと出荷予定日をマップとして取り出す
-		Map<String,String> orderIdAndSendDateMap = getOrderIdAndSendDateMap(receiveOrderInfoList);
-		//取得した受注データから出荷予定日のリストを作成する
-		Set<String> sendDateSet = getSendDateSet(receiveOrderInfoList);
-		//受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
-		Map<String,ArrayList<String>> itemQuantityMap =getItemQuantityMap(_request,orderIdAndSendDateMap,sendDateSet);
 
-		//日別の受注件数データ作成
-		ArrayList<Long> countOrder = new ArrayList<Long>();
-		int i = 0;
-		for(String sendDate : sendDateSet) {
-			Long count = 0L;
-			for(String orderId : orderIdAndSendDateMap.keySet()) {
-				if(StringUtils.equals(orderIdAndSendDateMap.get(orderId), sendDate)) {
-					count++;
+		//受注データの存在チェック
+		if(!CollectionUtils.isEmpty(receiveOrderInfoList)) {
+
+			//取得した受注データから受注IDと出荷予定日をマップとして取り出す
+			orderIdAndSendDateMap = getOrderIdAndSendDateMap(receiveOrderInfoList);
+			//取得した受注データから出荷予定日のリストを作成する
+			sendDateSet = getSendDateSet(receiveOrderInfoList);
+			//受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
+			itemQuantityMap =getItemQuantityMap(_request,orderIdAndSendDateMap,sendDateSet);
+
+			//日別の受注件数データ作成
+			for(String sendDate : sendDateSet) {
+				Long count = 0L;
+				for(String orderId : orderIdAndSendDateMap.keySet()) {
+					if(StringUtils.equals(orderIdAndSendDateMap.get(orderId), sendDate)) {
+						count++;
+					}
 				}
+				countOrder.add(count);
 			}
-			countOrder.add(count);
-		}
 
+		} else {
+			displayMessage = "※出荷データが存在しません。";
+		}
+		model.addAttribute("message",displayMessage);
 		model.addAttribute("itemQuantityMap", itemQuantityMap);
 		model.addAttribute("sendDateList", sendDateSet);
 		model.addAttribute("countOrder",countOrder);
@@ -125,8 +137,9 @@ public class PickingController extends BaseController {
 			String receiveOrderSendPlanDate = orderIdAndSendDateMap.get(orderId);
 			//出荷予定日に対する商品・数量マップを取得
 			HashMap<String,String> itemQuantityMap = sendPlanMap.get(receiveOrderSendPlanDate);
-			//商品名取得
-			String itemName = receiveOrderRowInfo.get("receive_order_row_goods_name");
+			//商品名取得(オプションもnullでなければ追記する)
+			String itemName = String.join("",receiveOrderRowInfo.get("receive_order_row_goods_name"),receiveOrderRowInfo.get("receive_order_row_goods_option") == null ? "" : StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option"));
+
 			//アイテムの必要数量取得
 			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
 
@@ -186,6 +199,8 @@ public class PickingController extends BaseController {
 		//1週間後までの出荷予定日のものを検索対称する。
 		apiParams.put("receive_order_send_plan_date-lte", ConvertUtils.getDateStringAdded(searchDate, 7));
 
+		apiParams.put("receive_order_cancel_date-null", "");
+
 		apiParams.put("fields", "receive_order_id,receive_order_send_date,receive_order_send_plan_date");
 
 		return apiParams;
@@ -202,7 +217,7 @@ public class PickingController extends BaseController {
 
 		apiParams.put("receive_order_row_receive_order_id-in", orderIdSet.stream().collect(Collectors.joining(",")));
 
-		apiParams.put("fields", "receive_order_row_receive_order_id,receive_order_row_shop_cut_form_id,receive_order_row_goods_id,receive_order_row_goods_name,receive_order_row_quantity");
+		apiParams.put("fields", "receive_order_row_receive_order_id,receive_order_row_shop_cut_form_id,receive_order_row_goods_id,receive_order_row_goods_name,receive_order_row_goods_option,receive_order_row_quantity");
 
 		return apiParams;
 	}

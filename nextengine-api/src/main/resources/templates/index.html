@@ -10,6 +10,8 @@
 	crossorigin="anonymous">
 <link rel="stylesheet"
 	href="https://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css">
+<link rel="stylesheet"
+	th:href="@{/css/style.css}" type="text/css">
 </head>
 <body>
 
@@ -24,9 +26,10 @@
 			</div>
 			<div class="btn-group">
 				<button type="submit" class="btn btn-primary">検索</button>
-				<button id="resetButton" type="reset" class="btn btn-warning">クリア</button>
+				<button id="resetButton" type="button" class="btn btn-warning">クリア</button>
 			</div>
 		</form>
+		<div class="message-area" th:text="${message}">	</div>
 		<table class="table table-striped">
 			<thead class="thead-dark">
 				<tr>
