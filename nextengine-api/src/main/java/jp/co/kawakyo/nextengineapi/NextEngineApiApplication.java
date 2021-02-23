@@ -10,7 +10,6 @@ import org.springframework.context.annotation.ImportResource;
 
 @SpringBootApplication
 @ImportResource("classpath:META-INF/spring-configuration.xml")
-//public class NextEngineApiApplication {
 public class NextEngineApiApplication extends SpringBootServletInitializer {
 
 	/**
