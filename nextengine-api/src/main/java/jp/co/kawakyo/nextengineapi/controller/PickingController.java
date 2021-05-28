@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -138,7 +139,7 @@ public class PickingController extends BaseController {
 			//出荷予定日に対する商品・数量マップを取得
 			HashMap<String,String> itemQuantityMap = sendPlanMap.get(receiveOrderSendPlanDate);
 			//商品名取得(オプションもnullでなければ追記する)
-			String itemName = String.join("",receiveOrderRowInfo.get("receive_order_row_goods_name"),receiveOrderRowInfo.get("receive_order_row_goods_option") == null ? "" : StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option"));
+			String itemName = String.join("",receiveOrderRowInfo.get("receive_order_row_goods_id"),"：", receiveOrderRowInfo.get("receive_order_row_goods_name"),receiveOrderRowInfo.get("receive_order_row_goods_option") == null ? "" : StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option"));
 
 			//アイテムの必要数量取得
 			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
@@ -245,8 +246,8 @@ public class PickingController extends BaseController {
 	 * @param sendPlanMap
 	 * @return
 	 */
-	private HashMap<String,ArrayList<String>> createItemQuantityMap(Set<String> itemSet,Set<String> dateSet,HashMap<String,HashMap<String,String>> sendPlanMap) {
-		HashMap<String,ArrayList<String>> rtnMap = new HashMap<>();
+	private TreeMap<String,ArrayList<String>> createItemQuantityMap(Set<String> itemSet,Set<String> dateSet,HashMap<String,HashMap<String,String>> sendPlanMap) {
+		TreeMap<String,ArrayList<String>> rtnMap = new TreeMap<>();
 
 		for(String itemName : itemSet) {
 			ArrayList<String> quantities = new ArrayList<>();
