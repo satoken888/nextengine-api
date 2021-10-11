@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -257,9 +258,16 @@ public class PickingController extends BaseController {
 			ArrayList<String> quantities = new ArrayList<>();
 			Long totalCount = 0L;
 			for(String dateStr : dateSet) {
-				quantities.add(sendPlanMap.get(dateStr).get(itemName));
-				//所定期間の合計ピッキング数を計算する
-				totalCount += Long.valueOf(sendPlanMap.get(dateStr).get(itemName));
+				String quantityStr = sendPlanMap.get(dateStr).get(itemName); 
+				if(Objects.isNull(quantityStr)) {
+					quantities.add("0");
+					//所定期間の合計ピッキング数を計算する
+					totalCount += Long.valueOf(0L);
+				} else {
+					quantities.add(quantityStr);
+					//所定期間の合計ピッキング数を計算する
+					totalCount += Long.valueOf(quantityStr);
+				}
 			}
 			quantities.add(String.valueOf(totalCount));
 			rtnMap.put(itemName, quantities);
