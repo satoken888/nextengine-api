@@ -77,6 +77,7 @@ public class PickingController extends BaseController {
 			itemQuantityMap =getItemQuantityMap(_request,orderIdAndSendDateMap,sendDateSet);
 
 			//日別の受注件数データ作成
+			Long totalCount = 0L;
 			for(String sendDate : sendDateSet) {
 				Long count = 0L;
 				for(String orderId : orderIdAndSendDateMap.keySet()) {
@@ -84,8 +85,11 @@ public class PickingController extends BaseController {
 						count++;
 					}
 				}
+				totalCount += count;
 				countOrder.add(count);
 			}
+			//合計件数を最後に追加
+			countOrder.add(totalCount);
 
 		} else {
 			displayMessage = "※出荷データが存在しません。";
@@ -251,9 +255,13 @@ public class PickingController extends BaseController {
 
 		for(String itemName : itemSet) {
 			ArrayList<String> quantities = new ArrayList<>();
+			Long totalCount = 0L;
 			for(String dateStr : dateSet) {
 				quantities.add(sendPlanMap.get(dateStr).get(itemName));
+				//所定期間の合計ピッキング数を計算する
+				totalCount += Long.valueOf(sendPlanMap.get(dateStr).get(itemName));
 			}
+			quantities.add(String.valueOf(totalCount));
 			rtnMap.put(itemName, quantities);
 		}
 

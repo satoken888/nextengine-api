@@ -18,7 +18,6 @@ public class KawakyoErrorController implements ErrorController {
 		try {
 			model.addAttribute("data",ConvertUtils.convertOb2String(model));
 		} catch (JsonProcessingException e) {
-			// TODO 自動生成された catch ブロック
 			model.addAttribute("errorMessage",ConvertUtils.convertOb2String(e));
 			e.printStackTrace();
 		}
@@ -27,7 +26,6 @@ public class KawakyoErrorController implements ErrorController {
 
 	@Override
 	public String getErrorPath() {
-		// TODO 自動生成されたメソッド・スタブ
 		return "/error";
 	}
 
