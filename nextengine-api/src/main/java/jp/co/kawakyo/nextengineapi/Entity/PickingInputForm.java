@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class PickingInputForm {
-	private String inputPickingDate;
+	private String inputStartPickingDate;
+	private String inputEndPickingDate;
 }
