@@ -8,7 +8,7 @@
 	<div th:replace="common :: header"></div>
 
 	<div class="container">
-		<h1>受注登録画面</h1>
+		<h1>受注登録画面(まだ使えません。ごめんなさい。 by 室長)</h1>
 
 		<div class="btn-group btn-group-toggle　mb-4" data-toggle="buttons">
 			<label class="btn btn-primary active"> <input type="radio"
@@ -91,9 +91,15 @@
 				</div>
 				<div class="form-row">
 					<div class="form-group col-md-4">
-						<label for="input_destination_zipcode"> 郵便番号： </label> <input
-							type="text" id="input_destination_zipcode" class="form-control"
-							placeholder="0000000">
+						<label for="input_destination_zipcode"> 郵便番号： </label>
+						<div class="input-group">
+							<input type="text" id="input_destination_zipcode" class="form-control"
+								placeholder="0000000">
+							<div class="input-group-append">
+								<button class="btn btn-outline-secondary" type="button"
+									id="append_input_destination_zipcode">〒→住所</button>
+							</div>
+						</div>
 					</div>
 					<div class="form-group col-md-4">
 						<label for="input_destination_pref"> 都道府県： </label> <input
@@ -218,8 +224,8 @@
 					}
 				});
 
-		$("#input_buyer_zipcode").blur(searchAddressFromZipcode);
-		$("#append_input_buyer_zipcode").on("click", searchAddressFromZipcode);
+		$("#input_buyer_zipcode,#input_destination_zipcode").blur(searchAddressFromZipcode);
+		$("#append_input_buyer_zipcode,#append_input_destination_zipcode").on("click", searchAddressFromZipcode);
 		function searchAddressFromZipcode() {
 			$.ajax(
 					{

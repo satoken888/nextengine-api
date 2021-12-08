@@ -259,7 +259,9 @@ public class PickingController extends BaseController {
 		HashMap<String, String> apiParams = new HashMap<>();
 
 		apiParams.put("receive_order_row_receive_order_id-in", orderIdSet.stream().collect(Collectors.joining(",")));
-
+		
+		apiParams.put("receive_order_row_cancel_flag-eq", "0");
+		
 		apiParams.put("fields",
 				"receive_order_row_receive_order_id,receive_order_row_shop_cut_form_id,receive_order_row_goods_id,receive_order_row_goods_name,receive_order_row_goods_option,receive_order_row_quantity");
 
