@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -161,8 +163,7 @@ public class PickingController extends BaseController {
 			// 商品名取得(オプションもnullでなければ追記する)
 			String itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
 					receiveOrderRowInfo.get("receive_order_row_goods_name"),
-					receiveOrderRowInfo.get("receive_order_row_goods_option") == null ? ""
-							: StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option"));
+					getOptionName(receiveOrderRowInfo)).trim();
 
 			// アイテムの必要数量取得
 			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
@@ -246,6 +247,33 @@ public class PickingController extends BaseController {
 		apiParams.put("fields", "receive_order_id,receive_order_send_date,receive_order_send_plan_date");
 
 		return apiParams;
+	}
+	
+	/**
+	 * 商品明細オプション名の表示非表示のハンドリングメソッド
+	 * @param receiveOrderRowInfo 受注明細情報
+	 * @return オプション名（表示する場合はそのまま、非表示対象となった場合は空文字を返す）
+	 */
+	private String getOptionName(Map<String,String> receiveOrderRowInfo) {
+		String optionName = "";
+		
+		//nullチェック
+		if(receiveOrderRowInfo.get("receive_order_row_goods_option") != null) {
+			
+			//非表示対象の文字列をregexに表記
+			//TODO:非表示リストを後々DB化か？
+			String regex = "未成年者の飲酒|※冷凍便商品";
+			//上記の表記を含むオプション名の場合は空文字のまま返す
+			Pattern p = Pattern.compile(regex);
+			Matcher m = p.matcher(receiveOrderRowInfo.get("receive_order_row_goods_option"));
+			if(!m.find()) {
+				//オプション名に上記の表記を含まない場合は商品のオプション名を返す
+				optionName = StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option");
+			}
+		}
+		
+		return optionName;
+		
 	}
 
 	/**
