@@ -8,4 +8,5 @@ public class PickingInputForm {
 	private String inputStartPickingDate;
 	private String inputEndPickingDate;
 	private String divShop;
+	private String divOutput;
 }

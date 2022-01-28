@@ -189,6 +189,7 @@ public class PickingController extends BaseController {
 			}
 		}
 
+		//商品名の順序に並び替えをしつつ重複を削除した状態の商品名のセットを取得する。
 		TreeSet<String> itemSet = new TreeSet<>(getReceiveOrderItemList(sendPlanMap));
 
 		return createItemQuantityMap(itemSet, sendDateSet, sendPlanMap);
