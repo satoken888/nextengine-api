@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import jp.co.kawakyo.nextengineapi.Entity.PickingInputForm;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.base.NeToken;
+import jp.co.kawakyo.nextengineapi.utils.Constant;
 import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
 import jp.nextengine.api.sdk.NeApiClientException;
@@ -52,7 +53,12 @@ public class PickingController extends BaseController {
 		}
 
 		// 初期表示時の入力フォーム取得のためForm生成
-		model.addAttribute("pickingInputForm", new PickingInputForm());
+		//ラジオボタンが通販部を初期表示する用に設定
+		PickingInputForm pickingInputForm = new PickingInputForm();
+		pickingInputForm.setDivShop(Constant.NE_DIV_SHOP_DM);
+		model.addAttribute("pickingInputForm", pickingInputForm);
+		
+		// 初期表示時のラジオボタン表示を通販部に設定
 		logger.info("end initialView");
 		return "index";
 	}
@@ -61,21 +67,27 @@ public class PickingController extends BaseController {
 	private String showPickingData(HttpServletRequest _request, HttpServletResponse _response, Model model,
 			@ModelAttribute PickingInputForm pickingInputForm) {
 
+		//検索画面の出荷予定日（始め）
 		String inputStartPickingDate = pickingInputForm.getInputStartPickingDate();
+		//検索画面の出荷予定日（終わり）
 		String inputEndPickingDate = pickingInputForm.getInputEndPickingDate();
+		//店舗区分（通販or本館）
+		String divShop = pickingInputForm.getDivShop();
+		//画面表示の文言（主にエラーメッセージに利用）
 		String displayMessage = "";
 		Map<String, String> orderIdAndSendDateMap = new HashMap<>();
 		Set<String> sendDateSet = new HashSet<>();
 		Map<String, ArrayList<String>> itemQuantityMap = new HashMap<>();
 		ArrayList<Long> countOrder = new ArrayList<Long>();
 
+		
 		if (StringUtils.isEmpty(inputStartPickingDate)) {
 			// 出荷予定日（開始）が未入力の際は入力を促すメッセージを返す。
 			displayMessage = "※出荷予定日の検索開始日を入力してください。";
 		} else {
 			// 画面から入力された出荷予定日をもとに、該当の受注データをAPIから取得する
 			List<Map<String, String>> receiveOrderInfoList = getReceiveOrderInfoList(_request, inputStartPickingDate,
-					inputEndPickingDate);
+					inputEndPickingDate, divShop);
 
 			// 受注データの存在チェック
 			if (!CollectionUtils.isEmpty(receiveOrderInfoList)) {
@@ -209,16 +221,17 @@ public class PickingController extends BaseController {
 	 */
 	@SuppressWarnings("unchecked")
 	private ArrayList<Map<String, String>> getReceiveOrderInfoList(HttpServletRequest _request,
-			String inputStartPickingDate, String inputEndPickingDate) {
+			String inputStartPickingDate, String inputEndPickingDate, String divShop) {
 
 		//検索開始日に時分秒の表記を追加する
 		inputStartPickingDate = inputStartPickingDate + " 00:00:00";
 		//検索終了日が未入力の場合は空文字を、そうでない場合は時分秒の表記を追加する
 		inputEndPickingDate = StringUtils.isEmpty(inputEndPickingDate) ? "" : inputEndPickingDate + " 00:00:00";
 		
+		//API呼び出し（受注情報検索）
 		HashMap<String, Object> receiveOrderInfoResponse = neApiExecute(getCurrentToken(_request),
 				NeApiURL.RECEIVEORDER_BASE_SEARCH_PATH,
-				createReceiveOrderApiParam(inputStartPickingDate, inputEndPickingDate));
+				createReceiveOrderApiParam(inputStartPickingDate, inputEndPickingDate, divShop));
 		ArrayList<Map<String, String>> receiveOrderInfoList = (ArrayList<Map<String, String>>) receiveOrderInfoResponse
 				.get("data");
 		return receiveOrderInfoList;
@@ -229,7 +242,7 @@ public class PickingController extends BaseController {
 	 * 
 	 * @return
 	 */
-	private HashMap<String, String> createReceiveOrderApiParam(String searchStartDate, String searchEndDate) {
+	private HashMap<String, String> createReceiveOrderApiParam(String searchStartDate, String searchEndDate, String divShop) {
 
 		HashMap<String, String> apiParams = new HashMap<>();
 
@@ -245,6 +258,17 @@ public class PickingController extends BaseController {
 		apiParams.put("receive_order_cancel_date-null", "");
 
 		apiParams.put("fields", "receive_order_id,receive_order_send_date,receive_order_send_plan_date");
+		
+		if(StringUtils.equals(divShop, Constant.NE_DIV_SHOP_DM)){
+			/* 通販部用の店舗指定を追加 */
+			apiParams.put("receive_order_shop_id-in", String.join(",", Constant.NE_SHOP_CODE_RAKUTEN,
+																		Constant.NE_SHOP_CODE_AMAZON,
+																		Constant.NE_SHOP_CODE_YAHOO,
+																		Constant.NE_SHOP_CODE_OFFICIAL));
+		} else { 
+			apiParams.put("receive_order_shop_id-in", Constant.NE_SHOP_CODE_HONKAN);
+		}
+		
 
 		return apiParams;
 	}

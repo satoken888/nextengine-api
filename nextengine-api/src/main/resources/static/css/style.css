@@ -4,3 +4,8 @@
 	color:red;
 	font-weight:bold;
 }
+
+form label {
+	line-height:2em;
+	font-size:1.1em;
+}
