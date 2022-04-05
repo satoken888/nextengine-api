@@ -25,6 +25,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jp.co.kawakyo.nextengineapi.Entity.PickingInputForm;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.base.NeToken;
@@ -56,6 +61,7 @@ public class PickingController extends BaseController {
 		//ラジオボタンが通販部を初期表示する用に設定
 		PickingInputForm pickingInputForm = new PickingInputForm();
 		pickingInputForm.setDivShop(Constant.NE_DIV_SHOP_DM);
+		pickingInputForm.setDivOutput(Constant.NE_DIV_OUTPUT_SHIPPING);
 		model.addAttribute("pickingInputForm", pickingInputForm);
 		
 		// 初期表示時のラジオボタン表示を通販部に設定
@@ -73,6 +79,8 @@ public class PickingController extends BaseController {
 		String inputEndPickingDate = pickingInputForm.getInputEndPickingDate();
 		//店舗区分（通販or本館）
 		String divShop = pickingInputForm.getDivShop();
+		//出力区分(出荷確認用or工場発注用)
+		String divOutput = pickingInputForm.getDivOutput();
 		//画面表示の文言（主にエラーメッセージに利用）
 		String displayMessage = "";
 		Map<String, String> orderIdAndSendDateMap = new HashMap<>();
@@ -98,7 +106,18 @@ public class PickingController extends BaseController {
 				sendDateSet = getSendDateSet(receiveOrderInfoList);
 				// 受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
 				itemQuantityMap = getItemQuantityMap(_request, orderIdAndSendDateMap, sendDateSet);
-
+				
+				if(StringUtils.equals(divOutput, "2")) {
+					//出力区分が工場発注用の場合は商品の構成品でリストを再度作成しなおす。
+					//構成品のデータはConstantクラスを参照
+					try {
+						itemQuantityMap = replaceItemQuantityMapForOrder(itemQuantityMap);
+					} catch (JsonProcessingException e) {
+						// TODO 自動生成された catch ブロック
+						e.printStackTrace();
+					}
+				}
+				
 				// 日別の受注件数データ作成
 				Long totalCount = 0L;
 				for (String sendDate : sendDateSet) {
@@ -123,6 +142,67 @@ public class PickingController extends BaseController {
 		model.addAttribute("sendDateList", sendDateSet);
 		model.addAttribute("countOrder", countOrder);
 		return "index";
+	}
+
+	/**
+	 * 発送商品リストから構成品商品リストへの変換処理
+	 * @param itemQuantityMap 発送商品の商品名・日別の発送商品数のリスト(String,ArrayList\<String\>形式)
+	 * @return itemQuantityMap 構成品の数量を追加し、既存のセット商品項目を削除したマップ
+	 * @throws JsonMappingException 
+	 * @throws JsonProcessingException
+	 */
+	private Map<String, ArrayList<String>> replaceItemQuantityMapForOrder(Map<String, ArrayList<String>> itemQuantityMap) throws JsonMappingException, JsonProcessingException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		//Constantクラスより、構成品商品情報を取得する
+		Map<String,Map<String,Long>> conversionMap = mapper.readValue(Constant.JSON_CONVERSION_ITEMQUANTITY,new TypeReference<Map<String,Map<String,Long>>>() {});
+		
+		//構成品情報のキーセットより、変換対象の商品名リストを取得する。
+		//そのリストの数分繰り返し処理をする
+		for(String conversionItemName : conversionMap.keySet()) {
+			
+			//発送商品リストに変換対象の商品があるか、無い場合は処理をせずにそのままマップを返す
+			if(itemQuantityMap.containsKey(conversionItemName)) {
+				
+				//変換対象商品の出荷日別の数量リストを取得する
+				ArrayList<String> itemQuantityList = itemQuantityMap.get(conversionItemName);
+				
+				//変換対象商品の変換先商品目のリストを取得する。
+				//赤ベコ丼黄箱セットなどの場合は、黄箱と赤ベコ丼がこのリストに入っている。
+				//リストの分繰り返し処理をする
+				for(String conversionToItemName : conversionMap.get(conversionItemName).keySet()) {
+					
+					//構成品の数量を取得する
+					Long containItemCount = conversionMap.get(conversionItemName).get(conversionToItemName);
+					
+					//発送商品リストにその構成品商品が存在するかチェック
+					if(itemQuantityMap.containsKey(conversionToItemName)) {
+						//存在する場合は既存の出荷数量リストに追加の処理を行う。
+						ArrayList<String> addItemQuantityList = itemQuantityMap.get(conversionToItemName);
+						int i = 0;
+						for(String itemQuantity : itemQuantityList) {
+							addItemQuantityList.set(i, String.valueOf(Long.valueOf(addItemQuantityList.get(i)) + Long.valueOf(itemQuantity) * containItemCount));
+							i++;
+						}
+					} else {
+						//存在しない場合は新規で出荷数量リストを作成しマップに追加する。
+						ArrayList<String> addedItemQuantityList = new ArrayList<String>();
+						for(String itemQuantity : itemQuantityList) {
+							addedItemQuantityList.add(String.valueOf(Long.valueOf(itemQuantity) * containItemCount));
+						}
+						itemQuantityMap.put(conversionToItemName, addedItemQuantityList);
+					}
+					
+				}
+				
+				//構成品への変換処理を行ったら、もとの発送対象尾商品情報はマップから削除する。
+				//例えばレンジ麺6個セットの場合は、レンジ麺の追加処理を行った場合は
+				//レンジ麺6個セット自体の行の情報は無くす必要がある
+				itemQuantityMap.remove(conversionItemName);
+			}
+		}
+
+		return itemQuantityMap;
 	}
 
 	/**
