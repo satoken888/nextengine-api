@@ -2,6 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head lang="ja"
 	th:replace="common :: meta_header('picking',~{::link},~{::script})">
+	
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css"/>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
 </head>
 <body>
 
@@ -51,7 +54,7 @@
 			</div>
 		</form>
 		<div class="message-area" th:text="${message}"></div>
-		<table class="table table-striped">
+		<table id="resultTable" class="table table-striped">
 			<thead class="thead-dark">
 				<tr>
 					<th scope="col"></th>
@@ -81,6 +84,25 @@
 		$("#resetButton").on("click", function() {
 			$("#datepicker_start,#datepicker_end").val("");
 		});
+		
+		$(function(){
+			
+            $("#resultTable").DataTable({
+            	
+            	//日本語化
+            	"language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Japanese.json"
+                },
+            	
+            	// 件数切替機能 無効
+                lengthChange: false,
+                // ページング機能 無効
+                paging: false,
+                //再表示の際は再度構築
+                destroy:true
+                
+            });
+        });
 	</script>
 
 </body>
