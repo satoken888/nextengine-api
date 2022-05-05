@@ -2,9 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head lang="ja"
 	th:replace="common :: meta_header('picking',~{::link},~{::script})">
-	
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css"/>
-	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
+
+<link rel="stylesheet" type="text/css"
+	href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css" />
+<script type="text/javascript"
+	src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
 </head>
 <body>
 
@@ -13,17 +15,18 @@
 	<div class="container">
 		<h1>ピッキングリスト取得画面</h1>
 		<form role="form" action="/picking" th:action="@{/picking}"
-			th:object="${pickingInputForm}" method="post">
+			th:object="${pickingInputForm}" method="post" enctype="multipart/form-data">
 			<div class="form-row">
 				<label for="divShop"> 店舗区分： </label>
 				<div class="form-check form-check-inline">
 					<input class="form-check-input" type="radio" value="DM"
-						name="divShop" id="radio_DM" th:checked="*{divShop == 'DM'}"> <label
-						class="form-check-label" for="radio_DM"> 通販部 </label>
+						name="divShop" id="radio_DM" th:checked="*{divShop == 'DM'}">
+					<label class="form-check-label" for="radio_DM"> 通販部 </label>
 				</div>
 				<div class="form-check form-check-inline">
 					<input class="form-check-input" type="radio" value="honkan"
-						name="divShop" id="radio_honkan" th:checked="*{divShop == 'honkan'}"> <label
+						name="divShop" id="radio_honkan"
+						th:checked="*{divShop == 'honkan'}"> <label
 						class="form-check-label" for="radio_honkan"> 本館 </label>
 				</div>
 			</div>
@@ -31,13 +34,15 @@
 				<label for="divShop"> 出力区分： </label>
 				<div class="form-check form-check-inline">
 					<input class="form-check-input" type="radio" value="1"
-						name="divOutput" id="radio_shipping" th:checked="*{divOutput == '1'}"> <label
+						name="divOutput" id="radio_shipping"
+						th:checked="*{divOutput == '1'}"> <label
 						class="form-check-label" for="radio_shipping"> 出荷確認用 </label>
 				</div>
 				<div class="form-check form-check-inline">
 					<input class="form-check-input" type="radio" value="2"
-						name="divOutput" id="radio_order" th:checked="*{divOutput == '2'}"> <label
-						class="form-check-label" for="radio_order"> 工場発注用（試験中） </label>
+						name="divOutput" id="radio_order" th:checked="*{divOutput == '2'}">
+					<label class="form-check-label" for="radio_order">
+						工場発注用（試験中） </label>
 				</div>
 			</div>
 			<div class="form-group">
@@ -49,9 +54,26 @@
 					name="inputEndPickingDate" th:field="*{inputEndPickingDate}"></label>
 			</div>
 			<div class="btn-group">
-				<button type="submit" class="btn btn-primary">検索</button>
+				<button type="submit" class="btn btn-primary" name="search" value="search">検索</button>
 				<button id="resetButton" type="button" class="btn btn-warning">クリア</button>
 			</div>
+			<hr>
+			<div class="form-group">
+				<label for="inputFile">DM Picking File input</label>
+				<div class="input-group">
+					<div class="custom-file">
+						<input type="file" class="custom-file-input" id="dmPickingFile"
+							name="dmPickingFile"> <label class="custom-file-label"
+							for="dmPickingFile" data-browse="参照">ファイルを選択(ここにドロップすることもできます)</label>
+					</div>
+					<div class="input-group-append">
+						<button type="button"
+							class="btn btn-outline-secondary input-group-text"
+							id="inputFileReset">取消</button>
+					</div>
+				</div>
+			</div>
+			<button type="submit" class="btn btn-primary" name="pickingUpload" value="pickingUpload">ファイル送信</button>
 		</form>
 		<div class="message-area" th:text="${message}"></div>
 		<table id="resultTable" class="table table-striped">
@@ -84,26 +106,38 @@
 		$("#resetButton").on("click", function() {
 			$("#datepicker_start,#datepicker_end").val("");
 		});
-		
-		$(function(){
-			
-            $("#resultTable").DataTable({
-            	
-            	//日本語化
-            	"language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Japanese.json"
-                },
-            	
-            	// 件数切替機能 無効
-                lengthChange: false,
-                // ページング機能 無効
-                paging: false,
-                //再表示の際は再度構築
-                destroy:true
-                
-            });
-        });
-	</script>
 
+		$(function() {
+
+			$("#resultTable")
+					.DataTable(
+							{
+
+								//日本語化
+								"language" : {
+									"url" : "//cdn.datatables.net/plug-ins/1.10.16/i18n/Japanese.json"
+								},
+
+								// 件数切替機能 無効
+								lengthChange : false,
+								// ページング機能 無効
+								paging : false,
+								//再表示の際は再度構築
+								destroy : true
+
+							});
+		});
+	</script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+	<script>
+		bsCustomFileInput.init();
+		document.getElementById('inputFileReset').addEventListener('click',
+				function() {
+					var elem = document.getElementById('dmPickingFile');
+					elem.value = '';
+					elem.dispatchEvent(new Event('change'));
+				});
+	</script>
 </body>
 </html>
