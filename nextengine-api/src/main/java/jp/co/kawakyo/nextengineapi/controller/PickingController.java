@@ -1,12 +1,16 @@
 package jp.co.kawakyo.nextengineapi.controller;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -36,6 +40,7 @@ import jp.co.kawakyo.nextengineapi.base.NeToken;
 import jp.co.kawakyo.nextengineapi.utils.Constant;
 import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
+import jp.nextengine.api.sdk.NeApiClient;
 import jp.nextengine.api.sdk.NeApiClientException;
 
 @Controller
@@ -52,6 +57,16 @@ public class PickingController extends BaseController {
 			HashMap<String, Object> userInfo = neLogin(_request, _response, authClientProperty.getRedirectUrl());
 			if (userInfo != null) {
 				saveTokenToSession(_request, new NeToken(), userInfo);
+			}
+
+			//LINEのバッチ処理用にファイル作成をする
+			if(userInfo != null && StringUtils.equals((String)userInfo.get("pic_mail_address"),"ke.sato@ramenkan.com")) {
+				Properties neTokenProperties = new Properties();
+				neTokenProperties.setProperty("accessToken", (String)userInfo.get(NeApiClient.KEY_ACCESS_TOKEN));
+				neTokenProperties.setProperty("refreshToken", (String)userInfo.get(NeApiClient.KEY_REFRESH_TOKEN));
+				OutputStream ostream = new FileOutputStream("src/main/resources/TokenForLineBatch.properties");
+				OutputStreamWriter osw = new OutputStreamWriter(ostream, "UTF-8");
+				neTokenProperties.store(osw, "Comments");	
 			}
 		} catch (Exception e) {
 			logger.error("アクセストークン取得エラー", e);
@@ -113,7 +128,6 @@ public class PickingController extends BaseController {
 					try {
 						itemQuantityMap = replaceItemQuantityMapForOrder(itemQuantityMap);
 					} catch (JsonProcessingException e) {
-						// TODO 自動生成された catch ブロック
 						e.printStackTrace();
 					}
 				}
