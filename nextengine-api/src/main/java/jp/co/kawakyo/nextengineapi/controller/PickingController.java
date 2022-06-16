@@ -389,6 +389,15 @@ public class PickingController extends BaseController {
 				//オプション名に上記の表記を含まない場合は商品のオプション名を返す
 				optionName = StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option");
 			}
+
+			//包装・のしのオプション記載を削除　
+			regex = "包装・のし";
+			p = Pattern.compile(regex);
+			m = p.matcher(optionName);
+			if(m.find()) {
+				//オプション名に包装・のしがある場合はその表記を削除する
+				optionName = StringUtils.substring(optionName, 0,optionName.indexOf(regex));
+			}
 		}
 		
 		return optionName;
