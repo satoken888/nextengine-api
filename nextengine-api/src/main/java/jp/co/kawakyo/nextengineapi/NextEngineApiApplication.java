@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @ImportResource("classpath:META-INF/spring-configuration.xml")
+@EnableScheduling
 public class NextEngineApiApplication extends SpringBootServletInitializer {
 
 	/**
