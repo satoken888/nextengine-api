@@ -120,7 +120,7 @@ public class PickingController extends BaseController {
 				// 取得した受注データから出荷予定日のリストを作成する
 				sendDateSet = getSendDateSet(receiveOrderInfoList);
 				// 受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
-				itemQuantityMap = getItemQuantityMap(_request, orderIdAndSendDateMap, sendDateSet);
+				itemQuantityMap = getItemQuantityMap(_request, orderIdAndSendDateMap, sendDateSet, divShop);
 				
 				if(StringUtils.equals(divOutput, "2")) {
 					//出力区分が工場発注用の場合は商品の構成品でリストを再度作成しなおす。
@@ -239,10 +239,11 @@ public class PickingController extends BaseController {
 	 * @param _request              HTTPリクエスト
 	 * @param orderIdAndSendDateMap 受注IDと出荷予定日を格納したマップ
 	 * @param sendDateSet           出荷予定日のソート済み、重複無しのセット
+	 * @param divShop               店舗区分
 	 * @return 商品ごとに出荷予定数を配列としてもったマップ
 	 */
 	private Map<String, ArrayList<String>> getItemQuantityMap(HttpServletRequest _request,
-			Map<String, String> orderIdAndSendDateMap, Set<String> sendDateSet) {
+			Map<String, String> orderIdAndSendDateMap, Set<String> sendDateSet, String divShop) {
 
 		// 出荷予定日ごとの商品出荷数のマップを作成する
 		// 出荷予定日をキー、商品名・商品数のマップを値としてもつマップを作成する
@@ -267,10 +268,18 @@ public class PickingController extends BaseController {
 			// 出荷予定日に対する商品・数量マップを取得
 			HashMap<String, String> itemQuantityMap = sendPlanMap.get(receiveOrderSendPlanDate);
 			// 商品名取得(オプションもnullでなければ追記する)
-			String itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
-					receiveOrderRowInfo.get("receive_order_row_goods_name"),
-					getOptionName(receiveOrderRowInfo)).trim();
-
+			// 本館の区分の場合、商品オプションをつけないようにする。
+			String itemName = "";
+			if(StringUtils.equals(divShop, Constant.NE_DIV_SHOP_HONKAN)) {
+				//本館の場合
+				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
+				receiveOrderRowInfo.get("receive_order_row_goods_name")).trim();
+			} else {
+				//本館以外の場合
+				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
+				receiveOrderRowInfo.get("receive_order_row_goods_name"),
+				getOptionName(receiveOrderRowInfo)).trim();
+			}
 			// アイテムの必要数量取得
 			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
 
