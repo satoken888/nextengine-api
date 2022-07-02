@@ -59,14 +59,15 @@ public class PickingController extends BaseController {
 				saveTokenToSession(_request, new NeToken(), userInfo);
 			}
 
-			//LINEのバッチ処理用にファイル作成をする
-			if(userInfo != null && StringUtils.equals((String)userInfo.get("pic_mail_address"),"ke.sato@ramenkan.com")) {
+			// LINEのバッチ処理用にファイル作成をする
+			if (userInfo != null
+					&& StringUtils.equals((String) userInfo.get("pic_mail_address"), "ke.sato@ramenkan.com")) {
 				Properties neTokenProperties = new Properties();
-				neTokenProperties.setProperty("accessToken", (String)userInfo.get(NeApiClient.KEY_ACCESS_TOKEN));
-				neTokenProperties.setProperty("refreshToken", (String)userInfo.get(NeApiClient.KEY_REFRESH_TOKEN));
+				neTokenProperties.setProperty("accessToken", (String) userInfo.get(NeApiClient.KEY_ACCESS_TOKEN));
+				neTokenProperties.setProperty("refreshToken", (String) userInfo.get(NeApiClient.KEY_REFRESH_TOKEN));
 				OutputStream ostream = new FileOutputStream("src/main/resources/TokenForLineBatch.properties");
 				OutputStreamWriter osw = new OutputStreamWriter(ostream, "UTF-8");
-				neTokenProperties.store(osw, "Comments");	
+				neTokenProperties.store(osw, "Comments");
 			}
 		} catch (Exception e) {
 			logger.error("アクセストークン取得エラー", e);
@@ -121,10 +122,10 @@ public class PickingController extends BaseController {
 				sendDateSet = getSendDateSet(receiveOrderInfoList);
 				// 受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
 				itemQuantityMap = getItemQuantityMap(_request, orderIdAndSendDateMap, sendDateSet, divShop);
-				
-				if(StringUtils.equals(divOutput, "2")) {
-					//出力区分が工場発注用の場合は商品の構成品でリストを再度作成しなおす。
-					//構成品のデータはConstantクラスを参照
+
+				if (StringUtils.equals(divOutput, Constant.NE_DIV_OUTPUT_ORDER)) {
+					// 出力区分が工場発注用の場合は商品の構成品でリストを再度作成しなおす。
+					// 構成品のデータはConstantクラスを参照
 					try {
 						itemQuantityMap = replaceItemQuantityMapForOrder(itemQuantityMap);
 					} catch (JsonProcessingException e) {
@@ -270,15 +271,15 @@ public class PickingController extends BaseController {
 			// 商品名取得(オプションもnullでなければ追記する)
 			// 本館の区分の場合、商品オプションをつけないようにする。
 			String itemName = "";
-			if(StringUtils.equals(divShop, Constant.NE_DIV_SHOP_HONKAN)) {
-				//本館の場合
+			if (StringUtils.equals(divShop, Constant.NE_DIV_SHOP_HONKAN)) {
+				// 本館の場合
 				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
-				receiveOrderRowInfo.get("receive_order_row_goods_name")).trim();
+						receiveOrderRowInfo.get("receive_order_row_goods_name")).trim();
 			} else {
-				//本館以外の場合
+				// 本館以外の場合
 				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
-				receiveOrderRowInfo.get("receive_order_row_goods_name"),
-				getOptionName(receiveOrderRowInfo)).trim();
+						receiveOrderRowInfo.get("receive_order_row_goods_name"),
+						getOptionName(receiveOrderRowInfo)).trim();
 			}
 			// アイテムの必要数量取得
 			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
@@ -399,13 +400,27 @@ public class PickingController extends BaseController {
 				optionName = StringUtils.SPACE + receiveOrderRowInfo.get("receive_order_row_goods_option");
 			}
 
-			//包装・のしのオプション記載を削除　
+			// 包装・のしのオプション記載を削除
 			regex = "包装・のし";
 			p = Pattern.compile(regex);
 			m = p.matcher(optionName);
-			if(m.find()) {
-				//オプション名に包装・のしがある場合はその表記を削除する
-				optionName = StringUtils.substring(optionName, 0,optionName.indexOf(regex));
+			if (m.find()) {
+				// オプション名に包装・のしがある場合はその表記を削除する
+				// optionName = StringUtils.substring(optionName, 0, optionName.indexOf(regex));
+
+				//オプション名を空白で分割
+				String[] sepStr = StringUtils.split(optionName, "　");
+				String replacedOptionName = "";
+				for(String option : sepStr ) {
+					//オプション項目1項目ずつに指定の文字列が存在するかチェック。
+					//オプション名に指定文字列が無ければ表示するオプション名に採用する。
+					m = p.matcher(option);
+					if(!m.find()) {
+						//オプション名からバリエーションの表記を削除して格納
+						replacedOptionName += option.replace("バリエーション：","");
+					}
+				}
+				optionName = StringUtils.SPACE + replacedOptionName;
 			}
 		}
 		
