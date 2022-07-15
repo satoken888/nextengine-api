@@ -277,7 +277,7 @@ public class PickingController extends BaseController {
 						receiveOrderRowInfo.get("receive_order_row_goods_name")).trim();
 			} else {
 				// 本館以外の場合
-				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
+				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id").replace("-oka",""), "：",
 						receiveOrderRowInfo.get("receive_order_row_goods_name"),
 						getOptionName(receiveOrderRowInfo)).trim();
 			}
