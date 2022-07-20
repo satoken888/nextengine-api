@@ -9,3 +9,10 @@ form label {
 	line-height:2em;
 	font-size:1.1em;
 }
+
+#resultTable tr td:first-of-type {
+	border-right:5px solid #ff0b0b;
+	border-left:5px solid #ff0b0b;
+	font-weight:900;
+	background-color:yellow;
+}

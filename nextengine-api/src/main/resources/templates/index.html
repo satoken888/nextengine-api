@@ -58,8 +58,8 @@
 			<thead class="thead-dark">
 				<tr>
 					<th scope="col"></th>
-					<th scope="col" th:each="date : ${sendDateList}">[[${#strings.substring(date,0,10)}]]</th>
 					<th scope="col" th:text="合計"></th>
+					<th scope="col" th:each="date : ${sendDateList}">[[${#strings.substring(date,0,10)}]]</th>
 				</tr>
 				<tr>
 					<th scope="col">出荷件数</th>

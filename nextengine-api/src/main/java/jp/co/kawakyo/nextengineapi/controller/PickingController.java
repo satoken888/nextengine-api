@@ -146,7 +146,7 @@ public class PickingController extends BaseController {
 					countOrder.add(count);
 				}
 				// 合計件数を最後に追加
-				countOrder.add(totalCount);
+				countOrder.add(0,totalCount);
 
 			} else {
 				displayMessage = "※出荷データが存在しません。";
@@ -492,7 +492,7 @@ public class PickingController extends BaseController {
 					totalCount += Long.valueOf(quantityStr);
 				}
 			}
-			quantities.add(String.valueOf(totalCount));
+			quantities.add(0,String.valueOf(totalCount));
 			rtnMap.put(itemName, quantities);
 		}
 
