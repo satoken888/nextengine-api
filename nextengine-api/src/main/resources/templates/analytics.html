@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head lang="ja" th:replace="common :: meta_header('picking',~{::link},~{::script})">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
+</head>
+
+<body>
+
+    <div th:replace="common :: header"></div>
+
+    <div class="container">
+        <h1>分析画面</h1>
+        <form role="form" action="/analytics" th:action="@{/analytics}" th:object="${analyticsInputForm}" method="post">
+            <div class="form-row">
+                <label for="divShop"> 分析対象： </label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" value="itemRank" name="analyticsDiv" id="radio_itemRank"
+                        th:checked="*{analyticsDiv == 'itemRank'}"> <label class="form-check-label" for="radio_itemRank"> 商品ランキング（出荷ベース）</label>
+                </div>
+            <!--
+               <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" value="honkan" name="divShop" id="radio_honkan"
+                        th:checked="*{divShop == 'honkan'}"> <label class="form-check-label" for="radio_honkan"> 本館
+                    </label>
+                </div>
+            -->
+            </div>
+            <div class="form-group">
+                <label for="datepicker">出荷予定日: <input type="text" id="datepicker_start" class="form-control"
+                        name="inputStartPickingDate" th:field="*{inputStartPickingDate}"></label>
+                <span style="margin: 0 5px;">～</span> <label for="datepicker_end"><input type="text" id="datepicker_end"
+                        class="form-control" name="inputEndPickingDate" th:field="*{inputEndPickingDate}"></label>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">検索</button>
+                <button id="resetButton" type="button" class="btn btn-warning">クリア</button>
+            </div>
+        </form>
+        <div class="message-area" th:text="${displayMessage}"></div>
+        <table id="analyticsResultTable" class="table table-striped">
+			<thead class="thead-dark">
+				<tr>
+                    <th scope="col" th:text="Rank"></th>
+					<th scope="col" th:text="商品コード"></th>
+					<th scope="col" th:text="商品名"></th>
+					<th scope="col" th:text="出荷数量"></th>
+                    <th scope="col" th:text="出荷金額"></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="itemInfo, stat : ${itemRankingList}">
+					<td scope="row" th:text="${stat.count}"></th>
+                    <td scope="row" th:text="${itemInfo.itemCode}"></th>
+                    <td scope="row" th:text="${itemInfo.itemName}"></th>
+                    <td scope="row" th:text="${itemInfo.shippingAmount}"></th>
+                    <td scope="row" th:text="${itemInfo.subTotalPrice}"></th>
+				</tr>
+			</tbody>
+		</table>
+    </div>
+    <script type="text/javascript">
+		$(function() {
+			$.datepicker.setDefaults($.datepicker.regional["ja"]);
+			$("#datepicker_start,#datepicker_end").datepicker({
+				dateFormat : 'yy-mm-dd'
+			});
+		});
+		$("#resetButton").on("click", function() {
+			$("#datepicker_start,#datepicker_end").val("");
+		});
+	</script>
+</body>
+
+</html>

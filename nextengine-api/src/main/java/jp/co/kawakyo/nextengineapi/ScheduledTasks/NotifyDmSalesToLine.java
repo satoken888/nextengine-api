@@ -36,6 +36,7 @@ public class NotifyDmSalesToLine {
 
         //ネクストエンジンAPIで受注情報検索を行う（当日受注の検索）
         HashMap<String,Object> res = neApiClientService.neApiExecute(NeApiURL.RECEIVEORDER_BASE_SEARCH_PATH,createApiParamForTodaysOrder() , accessToken, refreshToken);
+        @SuppressWarnings("unchecked")
         ArrayList<Map<String,String>> orderInfoList = (ArrayList<Map<String, String>>) res.get("data");
 
         //売上金額の取得
