@@ -10,6 +10,18 @@ form label {
 	font-size:1.1em;
 }
 
+.flex {
+	display:flex;
+}
+
+.left-search-area {
+	width:50%;
+}
+
+.right-search-area {
+	width:50%;
+}
+
 #resultTable tr td:first-of-type {
 	border-right:5px solid #ff0b0b;
 	border-left:5px solid #ff0b0b;

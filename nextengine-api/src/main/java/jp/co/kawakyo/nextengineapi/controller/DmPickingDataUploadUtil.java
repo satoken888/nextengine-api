@@ -7,30 +7,16 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.stereotype.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import jp.co.kawakyo.nextengineapi.Entity.DmPickingDataCsvRecord;
-import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
 
-@Controller
-public class DmPickingDataUploadController extends BaseController {
+public class DmPickingDataUploadUtil {
 
-//	@RequestMapping(value="/picking", method=RequestMethod.POST, params="pickingUpload")
-//	private String uploadDmPickingData(Model model, 
-//										@RequestParam("dmPickingFile") MultipartFile uploadFile,
-//										@ModelAttribute PickingInputForm pickingInputForm
-//									) throws IOException {
-//
-//		List<DmPickingDataCsvRecord> csvDataList = getCSVDataFromDmPickingDataCsvRecord(uploadFile);
-//
-//		// 初期表示時の入力フォーム取得のためForm生成
-//		//ラジオボタンが通販部を初期表示する用に設定
-//		model.addAttribute("pickingInputForm", pickingInputForm);
-//
-//		return "index";
-//	}
+	static Logger logger = LoggerFactory.getLogger(DmPickingDataUploadUtil.class);
 
 	/**
 	 * アップロードファイルからレコードごとのリストを返す
@@ -39,7 +25,7 @@ public class DmPickingDataUploadController extends BaseController {
 	 * @throws UnsupportedEncodingException
 	 * @throws IOException
 	 */
-	public List<DmPickingDataCsvRecord> getCSVDataFromDmPickingDataCsvRecord(MultipartFile uploadFile) throws UnsupportedEncodingException, IOException {
+	public static List<DmPickingDataCsvRecord> getCSVDataFromDmPickingDataCsvRecord(MultipartFile uploadFile) throws UnsupportedEncodingException, IOException {
 
 		List<DmPickingDataCsvRecord> csvData = new ArrayList<DmPickingDataCsvRecord>();
 

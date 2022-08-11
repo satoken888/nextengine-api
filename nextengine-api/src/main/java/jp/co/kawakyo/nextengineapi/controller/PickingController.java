@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +37,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jp.co.kawakyo.nextengineapi.Entity.DmPickingDataCsvRecord;
 import jp.co.kawakyo.nextengineapi.Entity.PickingInputForm;
+import jp.co.kawakyo.nextengineapi.Entity.PickingTableRecord;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.base.NeToken;
 import jp.co.kawakyo.nextengineapi.utils.Constant;
@@ -44,6 +47,7 @@ import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
 import jp.nextengine.api.sdk.NeApiClient;
 import jp.nextengine.api.sdk.NeApiClientException;
+import lombok.Data;
 
 @Controller
 public class PickingController extends BaseController {
@@ -100,76 +104,83 @@ public class PickingController extends BaseController {
 		String divShop = pickingInputForm.getDivShop();
 		// 出力区分(出荷確認用or工場発注用)
 		String divOutput = pickingInputForm.getDivOutput();
-		// 画面表示の文言（主にエラーメッセージに利用）
-		String displayMessage = "";
+		// ピッキングファイル入力有無
+		boolean pickingFileDiv = false;
 
-		Map<String, String> orderIdAndSendDateMap = new HashMap<>();
-		Set<String> sendDateSet = new HashSet<>();
-		Map<String, ArrayList<String>> itemQuantityMap = new HashMap<>();
-		ArrayList<Long> countOrder = new ArrayList<Long>();
-
-		createPickingLists(_request, inputStartPickingDate, inputEndPickingDate, divShop, divOutput, displayMessage,
-				orderIdAndSendDateMap, sendDateSet, itemQuantityMap, countOrder);
-		// if (StringUtils.isEmpty(inputStartPickingDate)) {
-		// // 出荷予定日（開始）が未入力の際は入力を促すメッセージを返す。
-		// displayMessage = "※出荷予定日の検索開始日を入力してください。";
-		// } else {
-		// // 画面から入力された出荷予定日をもとに、該当の受注データをAPIから取得する
-		// List<Map<String, String>> receiveOrderInfoList =
-		// getReceiveOrderInfoList(_request, inputStartPickingDate,
-		// inputEndPickingDate, divShop);
-		//
-		// // 受注データの存在チェック
-		// if (!CollectionUtils.isEmpty(receiveOrderInfoList)) {
-		//
-		// // 取得した受注データから受注IDと出荷予定日をマップとして取り出す
-		// orderIdAndSendDateMap = getOrderIdAndSendDateMap(receiveOrderInfoList);
-		// // 取得した受注データから出荷予定日のリストを作成する
-		// sendDateSet = getSendDateSet(receiveOrderInfoList);
-		// // 受注明細APIを呼び出し、それぞれの商品ごとの出荷数リストを作成する。
-		// itemQuantityMap = getItemQuantityMap(_request, orderIdAndSendDateMap,
-		// sendDateSet);
-		//
-		// if(StringUtils.equals(divOutput, Constant.NE_DIV_OUTPUT_ORDER)) {
-		// //出力区分が工場発注用の場合は商品の構成品でリストを再度作成しなおす。
-		// //構成品のデータはConstantクラスを参照
-		// try {
-		// itemQuantityMap = replaceItemQuantityMapForOrder(itemQuantityMap);
-		// } catch (JsonProcessingException e) {
-		// // TODO 自動生成された catch ブロック
-		// e.printStackTrace();
-		// }
-		// }
-		//
-		// // 日別の受注件数データ作成
-		// Long totalCount = 0L;
-		// for (String sendDate : sendDateSet) {
-		// Long count = 0L;
-		// for (String orderId : orderIdAndSendDateMap.keySet()) {
-		// if (StringUtils.equals(orderIdAndSendDateMap.get(orderId), sendDate)) {
-		// count++;
-		// }
-		// }
-		// totalCount += count;
-		// countOrder.add(count);
-		// }
-		// // 合計件数を最後に追加
-		// countOrder.add(totalCount);
-		//
-		// } else {
-		// displayMessage = "※出荷データが存在しません。";
-		// }
-		// }
+		// 出荷予定日指定に対してのピッキング商品検索処理実施
+		CreatePickingListsResponse res = createPickingLists(_request, inputStartPickingDate, inputEndPickingDate,
+				divShop, divOutput);
 
 		// ここからCSVuploadの場合,実施する
 		if (uploadFile != null && uploadFile.getSize() > 0) {
 			logger.info("CSV処理します。");
+			pickingFileDiv = true;
+			//DMとECのピッキングリスト合算用に新たにリストを作成
+			ArrayList<PickingTableRecord> replacePickingTableList = new ArrayList<PickingTableRecord>(); 
+			try {
+				//CSVファイルデータをエンティティに変換
+				List<DmPickingDataCsvRecord> csvFileData = DmPickingDataUploadUtil
+						.getCSVDataFromDmPickingDataCsvRecord(uploadFile);
+				logger.debug(csvFileData.toString());
+
+				//ＤＭリストとＥＣリストをそれぞれ照らし合わせる
+				for(DmPickingDataCsvRecord dmRecord : csvFileData) {
+					boolean itemExists = false;
+					for(PickingTableRecord ecDataRecord : res.getPickingTableRecordList()){
+						if(StringUtils.equals(ecDataRecord.getItemCode(),dmRecord.getItemCd())) {
+							//ＥＣとＤＭのリストの中に合致するものがあった場合フラグを立てる
+							itemExists = true;
+							//ECとDMのリストを合算してリストに格納する
+							replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(),dmRecord.getItemName(),String.valueOf(dmRecord.getItemQuantity()+Long.valueOf(ecDataRecord.getEcTotal())),ecDataRecord.getEcTotal(),String.valueOf(dmRecord.getItemQuantity())));
+							break;
+						}
+					}
+
+					if(!itemExists) {
+						//合致する商品が無かった場合
+						replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(),dmRecord.getItemName(),String.valueOf(dmRecord.getItemQuantity()),"0",String.valueOf(dmRecord.getItemQuantity())));
+					}
+				}
+
+				//ECのリスト分ループしてDMのリストにないが、ECのリストにはあるパターンの商品を詰める
+				ArrayList<PickingTableRecord> ecOnlyList = new ArrayList<PickingTableRecord>();
+				for(PickingTableRecord ecRecord : res.getPickingTableRecordList()) {
+					boolean exists = false;
+					for(PickingTableRecord totalRecord : replacePickingTableList) {
+						//
+						if(StringUtils.equals(totalRecord.getItemCode(),ecRecord.getItemCode())) {
+							exists = true;
+							break;
+						}
+					}
+
+					if(!exists) {
+						ecRecord.setDmTotal("0");
+						ecOnlyList.add(ecRecord);
+					}
+				}
+
+				//リプレース用のリストにECのみの商品を追加
+				replacePickingTableList.addAll(ecOnlyList);
+				//商品コード順に並び替えて、レスポンスのリストを上書きする
+				res.setPickingTableRecordList(replacePickingTableList.stream().sorted((e1, e2) -> e1.getItemCode().compareTo(e2.getItemCode())).collect(Collectors.toList()));
+
+			} catch (UnsupportedEncodingException e) {
+				logger.error("エンコードエラー");
+				logger.error("ファイルを確認してください。");
+			} catch (IOException e) {
+				logger.error("ファイルエラー");
+				logger.error("ファイルを確認してください。");
+			}
+
 		}
 
-		model.addAttribute("message", displayMessage);
-		model.addAttribute("itemQuantityMap", itemQuantityMap);
-		model.addAttribute("sendDateList", sendDateSet);
-		model.addAttribute("countOrder", countOrder);
+		model.addAttribute("message", res.getDisplayMessage());
+		model.addAttribute("itemQuantityMap", res.getItemQuantityMap());
+		model.addAttribute("pickingTableRecordList", res.getPickingTableRecordList());
+		model.addAttribute("sendDateList", res.getSendDateSet());
+		model.addAttribute("countOrder", res.getCountOrder());
+		model.addAttribute("pickingFileInputDiv", pickingFileDiv);
 		return "index";
 	}
 
@@ -182,21 +193,20 @@ public class PickingController extends BaseController {
 	 * @param divShop               ショップ区分（通販or本館）
 	 * @param divOutput             出力区分（出荷用or工場発注用）
 	 * @param displayMessage        画面表示用文言
-	 * @param orderIdAndSendDateMap 受注IDと出荷予定日のマップ（本処理にて作成）
-	 * @param sendDateSet           出荷予定日のセット(本処理にて作成)
-	 * @param itemQuantityMap       商品ごと出荷予定日ごとの出荷量マップ（本処理にて作成）
-	 * @param countOrder            日ごとの出荷件数（本処理にて作成）
 	 */
-	public void createPickingLists(HttpServletRequest _request,
+	public CreatePickingListsResponse createPickingLists(HttpServletRequest _request,
 			String inputStartPickingDate,
 			String inputEndPickingDate,
 			String divShop,
-			String divOutput,
-			String displayMessage,
-			Map<String, String> orderIdAndSendDateMap,
-			Set<String> sendDateSet,
-			Map<String, ArrayList<String>> itemQuantityMap,
-			ArrayList<Long> countOrder) {
+			String divOutput) {
+
+		CreatePickingListsResponse res = new CreatePickingListsResponse();
+		Map<String, String> orderIdAndSendDateMap = new HashMap<String, String>();
+		Set<String> sendDateSet = new HashSet<String>();
+		Map<String, ArrayList<String>> itemQuantityMap = new HashMap<String, ArrayList<String>>();
+		List<PickingTableRecord> tableRecordList = new ArrayList<PickingTableRecord>();
+		ArrayList<Long> countOrder = new ArrayList<Long>();
+		String displayMessage = "";
 
 		if (StringUtils.isEmpty(inputStartPickingDate)) {
 			// 出荷予定日（開始）が未入力の際は入力を促すメッセージを返す。
@@ -226,6 +236,19 @@ public class PickingController extends BaseController {
 					}
 				}
 
+				// itemQuantityMapを画面表示用にエンティティ化する
+				for (String key : itemQuantityMap.keySet()) {
+					PickingTableRecord record = new PickingTableRecord();
+					record.setItemCode(StringUtils.split(key, "：", 2)[0]);
+					record.setItemName(StringUtils.split(key, "：", 2)[1]);
+					record.setTotal(itemQuantityMap.get(key).get(0));
+					// アップロード時の対応のためにECトータルを別パラメータにも追加
+					record.setEcTotal(itemQuantityMap.get(key).get(0));
+					record.setSumList(itemQuantityMap.get(key));
+					tableRecordList.add(record);
+					itemQuantityMap.get(key).remove(0);
+				}
+
 				// 日別の受注件数データ作成
 				Long totalCount = 0L;
 				for (String sendDate : sendDateSet) {
@@ -239,12 +262,29 @@ public class PickingController extends BaseController {
 					countOrder.add(count);
 				}
 				// 合計件数を最後に追加
-				countOrder.add(0,totalCount);
+				countOrder.add(0, totalCount);
 
 			} else {
 				displayMessage = "※出荷データが存在しません。";
 			}
 		}
+
+		res.setDisplayMessage(displayMessage);
+		res.setCountOrder(countOrder);
+		// res.setItemQuantityMap(itemQuantityMap);
+		res.setPickingTableRecordList(tableRecordList);
+		res.setSendDateSet(sendDateSet);
+
+		return res;
+	}
+
+	@Data
+	class CreatePickingListsResponse {
+		private String displayMessage;
+		private Map<String, ArrayList<String>> itemQuantityMap;
+		private Set<String> sendDateSet;
+		private ArrayList<Long> countOrder;
+		private List<PickingTableRecord> pickingTableRecordList;
 	}
 
 	/**
@@ -357,25 +397,33 @@ public class PickingController extends BaseController {
 		for (Map<String, String> receiveOrderRowInfo : receiveOrderRowInfoList) {
 			// 受注ID取得
 			String orderId = receiveOrderRowInfo.get("receive_order_row_receive_order_id");
+			// アイテムの必要数量取得
+			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
+			// 商品コード取得
+			String itemCode = receiveOrderRowInfo.get("receive_order_row_goods_id");
+			// 商品名取得
+			String itemNameFromInfoList = receiveOrderRowInfo.get("receive_order_row_goods_name");
+
 			// 受注IDに対する出荷予定日取得
 			String receiveOrderSendPlanDate = orderIdAndSendDateMap.get(orderId);
 			// 出荷予定日に対する商品・数量マップを取得
 			HashMap<String, String> itemQuantityMap = sendPlanMap.get(receiveOrderSendPlanDate);
+
+			// 商品コードから指定の文字列を削除する。
+			// 今後も削除処理はここに追加する。
+			itemCode = itemCode.replace("-oka", "");
+
 			// 商品名取得(オプションもnullでなければ追記する)
 			// 本館の区分の場合、商品オプションをつけないようにする。
 			String itemName = "";
 			if (StringUtils.equals(divShop, Constant.NE_DIV_SHOP_HONKAN)) {
 				// 本館の場合
-				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id"), "：",
-						receiveOrderRowInfo.get("receive_order_row_goods_name")).trim();
+				itemName = String.join("", itemCode, "：", itemNameFromInfoList).trim();
 			} else {
 				// 本館以外の場合
-				itemName = String.join("", receiveOrderRowInfo.get("receive_order_row_goods_id").replace("-oka",""), "：",
-						receiveOrderRowInfo.get("receive_order_row_goods_name"),
-						getOptionName(receiveOrderRowInfo)).trim();
+				itemName = String.join("", itemCode, "：", itemNameFromInfoList, getOptionName(receiveOrderRowInfo))
+						.trim();
 			}
-			// アイテムの必要数量取得
-			String itemQuantity = receiveOrderRowInfo.get("receive_order_row_quantity");
 
 			// 既に商品データが存在するかによって加算か登録か処理を分ける
 			if (itemQuantityMap.get(itemName) == null) {
@@ -387,7 +435,7 @@ public class PickingController extends BaseController {
 		}
 
 		// 商品名の順序に並び替えをしつつ重複を削除した状態の商品名のセットを取得する。
-		TreeSet<String> itemSet = new TreeSet<>(getReceiveOrderItemList(sendPlanMap));
+		TreeSet<String> itemSet = new TreeSet<String>(getReceiveOrderItemList(sendPlanMap));
 
 		return createItemQuantityMap(itemSet, sendDateSet, sendPlanMap);
 	}
@@ -502,16 +550,16 @@ public class PickingController extends BaseController {
 				// オプション名に包装・のしがある場合はその表記を削除する
 				// optionName = StringUtils.substring(optionName, 0, optionName.indexOf(regex));
 
-				//オプション名を空白で分割
+				// オプション名を空白で分割
 				String[] sepStr = StringUtils.split(optionName, "　");
 				String replacedOptionName = "";
-				for(String option : sepStr ) {
-					//オプション項目1項目ずつに指定の文字列が存在するかチェック。
-					//オプション名に指定文字列が無ければ表示するオプション名に採用する。
+				for (String option : sepStr) {
+					// オプション項目1項目ずつに指定の文字列が存在するかチェック。
+					// オプション名に指定文字列が無ければ表示するオプション名に採用する。
 					m = p.matcher(option);
-					if(!m.find()) {
-						//オプション名からバリエーションの表記を削除して格納
-						replacedOptionName += option.replace("バリエーション：","");
+					if (!m.find()) {
+						// オプション名からバリエーションの表記を削除して格納
+						replacedOptionName += option.replace("バリエーション：", "");
 					}
 				}
 				optionName = StringUtils.SPACE + replacedOptionName;
@@ -586,7 +634,7 @@ public class PickingController extends BaseController {
 					totalCount += Long.valueOf(quantityStr);
 				}
 			}
-			quantities.add(0,String.valueOf(totalCount));
+			quantities.add(0, String.valueOf(totalCount));
 			rtnMap.put(itemName, quantities);
 		}
 
