@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-NextEngineApiApplication<nextengine-api>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "jp.co.kawakyo.nextengineapi.NextEngineApiApplication",
+      "projectName": "nextengine-api",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

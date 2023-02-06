@@ -1,292 +1,586 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head lang="ja"
-	th:replace="common :: meta_header('registOrder',~{::link},~{::script})">
-</head>
-<body>
+  <head
+    lang="ja"
+    th:replace="common :: meta_header('registOrder',~{::link},~{::script})"
+  >
+  </head>
+  <body>
+    <div th:replace="common :: header"></div>
 
-	<div th:replace="common :: header"></div>
+    <div class="container">
+      <h1>受注登録画面(まだ使えません。ごめんなさい。 by 室長)</h1>
 
-	<div class="container">
-		<h1>受注登録画面(まだ使えません。ごめんなさい。 by 室長)</h1>
+      <div class="btn-group btn-group-toggle mb-4" data-toggle="buttons">
+        <label class="btn btn-primary active">
+          <input
+            type="radio"
+            name="options"
+            autocomplete="off"
+            value="1"
+            checked
+          />
+          購入者
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" name="options" autocomplete="off" value="2" />
+          届け先
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" name="options" autocomplete="off" value="3" />
+          商品・配達日・金額など
+        </label>
+        <button type="button" class="btn btn-primary" id="test_tel_send">
+          テスト送信
+        </button>
+      </div>
+      <form
+        th:action="@{/registOrder}"
+        action="/registOrder"
+        th:object="${registOrderInputForm}"
+        method="post"
+      >
+        <div id="buyer_area" class="d-block">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="input_buyer_customer_code"> 顧客コード： </label>
+              <input
+                type="text"
+                id="input_buyer_customer_code"
+                class="form-control"
+                placeholder="顧客コード"
+              />
+            </div>
+            <div class="form-group col-md-6">
+              <label for="input_buyer_tel"> 電話番号： </label>
+              <input
+                type="text"
+                id="input_buyer_tel"
+                class="form-control"
+                placeholder="000-0000-0000"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="input_buyer_zipcode"> 郵便番号： </label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="input_buyer_zipcode"
+                  class="form-control"
+                  placeholder="0000000"
+                />
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="append_input_buyer_zipcode"
+                  >
+                    〒→住所
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_buyer_pref"> 都道府県： </label>
+              <input
+                type="text"
+                id="input_buyer_pref"
+                class="form-control"
+                placeholder="〇〇県"
+              />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_buyer_municipalities"> 市区町村： </label>
+              <input
+                type="text"
+                id="input_buyer_municipalities"
+                class="form-control"
+                placeholder="〇〇市"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input_buyer_address1"> 住所１： </label>
+            <input
+              type="text"
+              id="input_buyer_address1"
+              class="form-control"
+              placeholder="住所１"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_buyer_address2"> 住所２： </label>
+            <input
+              type="text"
+              id="input_buyer_address2"
+              class="form-control"
+              placeholder="住所２"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_buyer_name"> お名前： </label>
+            <input
+              type="text"
+              id="input_buyer_name"
+              class="form-control"
+              placeholder="注文者名"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_buyer_furi"> フリガナ： </label>
+            <input
+              type="text"
+              id="input_buyer_furi"
+              class="form-control"
+              placeholder="チュウモンシャメイ"
+            />
+          </div>
+        </div>
+        <div id="destination_area" class="d-none">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="input_destination_customer_code">
+                顧客コード：
+              </label>
+              <input
+                type="text"
+                id="input_destination_customer_code"
+                class="form-control"
+                placeholder="顧客コード"
+              />
+            </div>
+            <div class="form-group col-md-6">
+              <label for="input_destination_tel"> 電話番号： </label>
+              <input
+                type="text"
+                id="input_destination_tel"
+                class="form-control"
+                placeholder="000-0000-0000"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="input_destination_zipcode"> 郵便番号： </label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="input_destination_zipcode"
+                  class="form-control"
+                  placeholder="0000000"
+                />
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="append_input_destination_zipcode"
+                  >
+                    〒→住所
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_destination_pref"> 都道府県： </label>
+              <input
+                type="text"
+                id="input_destination_pref"
+                class="form-control"
+                placeholder="〇〇県"
+              />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_destination_municipalities"> 市区町村： </label>
+              <input
+                type="text"
+                id="input_destination_municipalities"
+                class="form-control"
+                placeholder="〇〇市"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input_destination_address1"> 住所１： </label>
+            <input
+              type="text"
+              id="input_destination_address1"
+              class="form-control"
+              placeholder="住所１"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_destination_address2"> 住所２： </label>
+            <input
+              type="text"
+              id="input_destination_address2"
+              class="form-control"
+              placeholder="住所２"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_destination_name"> お名前： </label>
+            <input
+              type="text"
+              id="input_destination_name"
+              class="form-control"
+              placeholder="届け先名"
+            />
+          </div>
+          <div class="form-group">
+            <label for="input_destination_furi"> フリガナ： </label>
+            <input
+              type="text"
+              id="input_destination_furi"
+              class="form-control"
+              placeholder="トドケサキメイ"
+            />
+          </div>
+        </div>
+        <div id="information_area" class="d-none">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="input_order_date"> 受注日： </label>
+              <input type="text" id="input_order_date" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_shipping_date"> 出荷予定日： </label>
+              <input
+                type="text"
+                id="input_shipping_date"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_preferred_date"> 配達希望日： </label>
+              <input
+                type="text"
+                id="input_preferred_date"
+                class="form-control"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="input_preferred_time"> 届け時間帯： </label>
+              <input
+                type="text"
+                id="input_preferred_time"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_payment"> 支払方法： </label>
+              <input type="text" id="input_payment" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_invoice_type"> 送り状種別： </label>
+              <input type="text" id="input_invoice_type" class="form-control" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="input_cool"> クール区分： </label>
+              <input type="text" id="input_cool" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_postage"> 送料有無： </label>
+              <input type="text" id="input_postage" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_total_claim"> 請求額： </label>
+              <input type="text" id="input_total_claim" class="form-control" />
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
 
-		<div class="btn-group btn-group-toggle　mb-4" data-toggle="buttons">
-			<label class="btn btn-primary active"> <input type="radio"
-				name="options" autocomplete="off" value="1" checked> 購入者
-			</label> <label class="btn btn-primary"> <input type="radio"
-				name="options" autocomplete="off" value="2"> 届け先
-			</label> <label class="btn btn-primary"> <input type="radio"
-				name="options" autocomplete="off" value="3"> 商品・配達日・金額など
-			</label>
-		</div>
-		<form th:action="@{/registOrder}" action="/registOrder"
-			th:object="${registOrderInputForm}" method="post">
-			<div id="buyer_area" class="d-block">
-				<div class="form-row">
-					<div class="form-group col-md-6">
-						<label for="input_buyer_customer_code"> 顧客コード： </label> <input
-							type="text" id="input_buyer_customer_code" class="form-control"
-							placeholder="顧客コード">
+    <div
+      class="modal fade"
+      id="modal_zipcode"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="basicModal"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="modalLabelId">住所選択</h3>
+          </div>
+          <div class="modal-body">
+            <select id="modal_select_address" multiple></select>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              id="modal_zipcode_OK_button"
+              class="btn btn-primary"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-					</div>
-					<div class="form-group col-md-6">
-						<label for="input_buyer_tel"> 電話番号： </label> <input type="text"
-							id="input_buyer_tel" class="form-control"
-							placeholder="000-0000-0000">
-					</div>
-				</div>
-				<div class="form-row">
-					<div class="form-group col-md-4">
-						<label for="input_buyer_zipcode"> 郵便番号： </label>
-						<div class="input-group">
-							<input type="text" id="input_buyer_zipcode" class="form-control"
-								placeholder="0000000">
-							<div class="input-group-append">
-								<button class="btn btn-outline-secondary" type="button"
-									id="append_input_buyer_zipcode">〒→住所</button>
-							</div>
-						</div>
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_buyer_pref"> 都道府県： </label> <input type="text"
-							id="input_buyer_pref" class="form-control" placeholder="〇〇県">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_buyer_municipalities"> 市区町村： </label> <input
-							type="text" id="input_buyer_municipalities" class="form-control"
-							placeholder="〇〇市">
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="input_buyer_address1"> 住所１： </label> <input type="text"
-						id="input_buyer_address1" class="form-control" placeholder="住所１">
-				</div>
-				<div class="form-group">
-					<label for="input_buyer_address2"> 住所２： </label> <input type="text"
-						id="input_buyer_address2" class="form-control" placeholder="住所２">
-				</div>
-				<div class="form-group">
-					<label for="input_buyer_name"> お名前： </label> <input type="text"
-						id="input_buyer_name" class="form-control" placeholder="注文者名">
-				</div>
-				<div class="form-group">
-					<label for="input_buyer_furi"> フリガナ： </label> <input type="text"
-						id="input_buyer_furi" class="form-control" placeholder="チュウモンシャメイ">
-				</div>
-			</div>
-			<div id="destination_area" class="d-none">
-				<div class="form-row">
-					<div class="form-group col-md-6">
-						<label for="input_destination_customer_code"> 顧客コード： </label> <input
-							type="text" id="input_destination_customer_code"
-							class="form-control" placeholder="顧客コード">
+    <!-- 電話番号検索時用Modal -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="modal_customer_table_area">
+            <table class="table" id="modal_customer_table">
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>カナ</th>
+                  <th>郵便番号</th>
+                  <th>住所１</th>
+                  <th>住所２</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" id="tel_modal_submit" class="btn btn-primary">
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-					</div>
-					<div class="form-group col-md-6">
-						<label for="input_destination_tel"> 電話番号： </label> <input
-							type="text" id="input_destination_tel" class="form-control"
-							placeholder="000-0000-0000">
+    <script type="text/javascript">
+      $("input[name='options']").change(function () {
+        var division = $(this).val();
 
-					</div>
-				</div>
-				<div class="form-row">
-					<div class="form-group col-md-4">
-						<label for="input_destination_zipcode"> 郵便番号： </label>
-						<div class="input-group">
-							<input type="text" id="input_destination_zipcode" class="form-control"
-								placeholder="0000000">
-							<div class="input-group-append">
-								<button class="btn btn-outline-secondary" type="button"
-									id="append_input_destination_zipcode">〒→住所</button>
-							</div>
-						</div>
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_destination_pref"> 都道府県： </label> <input
-							type="text" id="input_destination_pref" class="form-control"
-							placeholder="〇〇県">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_destination_municipalities"> 市区町村： </label> <input
-							type="text" id="input_destination_municipalities"
-							class="form-control" placeholder="〇〇市">
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="input_destination_address1"> 住所１： </label> <input
-						type="text" id="input_destination_address1" class="form-control"
-						placeholder="住所１">
-				</div>
-				<div class="form-group">
-					<label for="input_destination_address2"> 住所２： </label> <input
-						type="text" id="input_destination_address2" class="form-control"
-						placeholder="住所２">
-				</div>
-				<div class="form-group">
-					<label for="input_destination_name"> お名前： </label> <input
-						type="text" id="input_destination_name" class="form-control"
-						placeholder="届け先名">
-				</div>
-				<div class="form-group">
-					<label for="input_destination_furi"> フリガナ： </label> <input
-						type="text" id="input_destination_furi" class="form-control"
-						placeholder="トドケサキメイ">
-				</div>
-			</div>
-			<div id="information_area" class="d-none">
-				<div class="form-row">
-					<div class="form-group col-md-4">
-						<label for="input_order_date"> 受注日： </label> <input type="text"
-							id="input_order_date" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_shipping_date"> 出荷予定日： </label> <input
-							type="text" id="input_shipping_date" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_preferred_date"> 配達希望日： </label> <input
-							type="text" id="input_preferred_date" class="form-control">
-					</div>
-				</div>
-				<div class="form-row">
-					<div class="form-group col-md-4">
-						<label for="input_preferred_time"> 届け時間帯： </label> <input
-							type="text" id="input_preferred_time" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_payment"> 支払方法： </label> <input type="text"
-							id="input_payment" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_invoice_type"> 送り状種別： </label> <input
-							type="text" id="input_invoice_type" class="form-control">
-					</div>
-				</div>
-				<div class="form-row">
-					<div class="form-group col-md-4">
-						<label for="input_cool"> クール区分： </label> <input type="text"
-							id="input_cool" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_postage"> 送料有無： </label> <input type="text"
-							id="input_postage" class="form-control">
-					</div>
-					<div class="form-group col-md-4">
-						<label for="input_total_claim"> 請求額： </label> <input type="text"
-							id="input_total_claim" class="form-control">
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
+        if (division == 1) {
+          $("#buyer_area,#destination_area,#information_area").removeClass(
+            "d-block d-none"
+          );
+          $("#buyer_area").addClass("d-block");
+          $("#destination_area, #information_area").addClass("d-none");
+        } else if (division == 2) {
+          $("#buyer_area,#destination_area,#information_area").removeClass(
+            "d-block d-none"
+          );
+          $("#destination_area").addClass("d-block");
+          $("#buyer_area, #information_area").addClass("d-none");
+        } else {
+          $("#buyer_area,#destination_area,#information_area").removeClass(
+            "d-block d-none"
+          );
+          $("#information_area").addClass("d-block");
+          $("#buyer_area, #destination_area").addClass("d-none");
+        }
+      });
 
-	<div class="modal fade" id="modal_zipcode" tabindex="-1" role="dialog"
-		aria-labelledby="basicModal" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h3 class="modal-title" id="modalLabelId">住所選択</h3>
-				</div>
-				<div class="modal-body">
-					<select id="modal_select_address" multiple>
-					</select>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-dismiss="modal">Close</button>
-					<button type="button" id="modal_zipcode_OK_button" class="btn btn-primary">OK</button>
-				</div>
-			</div>
-		</div>
-	</div>
+      $("#input_buyer_zipcode,#input_destination_zipcode").blur(
+        searchAddressFromZipcode
+      );
+      $("#append_input_buyer_zipcode,#append_input_destination_zipcode").on(
+        "click",
+        searchAddressFromZipcode
+      );
+      function searchAddressFromZipcode() {
+        $.ajax({
+          url: "https://zipcloud.ibsnet.co.jp/api/search",
+          type: "get",
+          datatype: "json",
+          data: {
+            zipcode: $("#input_buyer_zipcode").val().replace(/-/g, ""),
+          },
+        })
+          .done(function (data) {
+            var json = JSON.parse(data);
+            if (json.status == 200 && json.results != null) {
+              //該当の住所が見つかった場合
+              var results = json.results;
 
-	<script type="text/javascript">
-		$("input[name='options']").change(
-				function() {
-					var division = $(this).val();
+              if (results.length > 1) {
+                //複数件、該当の住所が存在するとき
+                $.each(results, function (index, value) {
+                  var address =
+                    value.address1 +
+                    " " +
+                    value.address2 +
+                    " " +
+                    value.address3;
+                  $("#modal_select_address").append(
+                    "<option value='" + address + "'>" + address + "</option>"
+                  );
+                });
 
-					if (division == 1) {
-						$("#buyer_area,#destination_area,#information_area")
-								.removeClass("d-block d-none");
-						$("#buyer_area").addClass("d-block");
-						$("#destination_area, #information_area").addClass(
-								"d-none");
-					} else if (division == 2) {
-						$("#buyer_area,#destination_area,#information_area")
-								.removeClass("d-block d-none");
-						$("#destination_area").addClass("d-block");
-						$("#buyer_area, #information_area").addClass("d-none");
-					} else {
-						$("#buyer_area,#destination_area,#information_area")
-								.removeClass("d-block d-none");
-						$("#information_area").addClass("d-block");
-						$("#buyer_area, #destination_area").addClass("d-none");
-					}
-				});
+                $("#modal_zipcode").modal();
+                $("#modal_zipcode_OK_button").on("click", function () {
+                  var selected_value = $("#modal_select_address").val();
+                  if (selected_value.length == 1) {
+                    var addresses = selected_value[0].split(" ");
 
-		$("#input_buyer_zipcode,#input_destination_zipcode").blur(searchAddressFromZipcode);
-		$("#append_input_buyer_zipcode,#append_input_destination_zipcode").on("click", searchAddressFromZipcode);
-		function searchAddressFromZipcode() {
-			$.ajax(
-					{
-						url : "https://zipcloud.ibsnet.co.jp/api/search",
-						type : "get",
-						datatype : "json",
-						data : {
-							"zipcode" : $("#input_buyer_zipcode").val()
-									.replace(/-/g, "")
-						}
-					}).done(function(data) {
-				var json = JSON.parse(data);
-				if (json.status == 200 && json.results != null) {
-					//該当の住所が見つかった場合
-					var results = json.results;
+                    //入力フォームに検索結果を入力
+                    $("#input_buyer_pref").val(addresses[0]);
+                    $("#input_buyer_municipalities").val(addresses[1]);
+                    $("#input_buyer_address1").val(addresses[2]);
+                  } else {
+                    console.log("ごめんなさい一つだけせんたくしてください。");
+                  }
 
-					if (results.length > 1) {
-						//複数件、該当の住所が存在するとき
-						$.each(results, function(index, value) {
-							var address = value.address1+ " " + value.address2 + " " + value.address3
-							$("#modal_select_address").append("<option value='" + address  + "'>" + address + "</option>");
-						})
-						
-						$("#modal_zipcode").modal();
-						$("#modal_zipcode_OK_button").on("click",function(){
-							var selected_value = $("#modal_select_address").val();
-							if(selected_value.length == 1) {
-								var addresses = selected_value[0].split(" ");
-								
-								//入力フォームに検索結果を入力
-								$("#input_buyer_pref").val(addresses[0]);
-								$("#input_buyer_municipalities").val(addresses[1]);
-								$("#input_buyer_address1").val(addresses[2]);
-							} else {
-								console.log("ごめんなさい一つだけせんたくしてください。");
-							}
-							
-							$("#modal_zipcode").modal("hide");
-						})
-					} else if (results.length == 1) {
-						//1件だけ該当の住所が存在するとき
-						var pref = results[0].address1;
-						var municipalities = results[0].address2;
-						var address1 = results[0].address3;
+                  $("#modal_zipcode").modal("hide");
+                });
+              } else if (results.length == 1) {
+                //1件だけ該当の住所が存在するとき
+                var pref = results[0].address1;
+                var municipalities = results[0].address2;
+                var address1 = results[0].address3;
 
-						//入力フォームに検索結果を入力
-						$("#input_buyer_pref").val(pref);
-						$("#input_buyer_municipalities").val(municipalities);
-						$("#input_buyer_address1").val(address1);
-					} else {
-						//0件のとき
-					}
+                //入力フォームに検索結果を入力
+                $("#input_buyer_pref").val(pref);
+                $("#input_buyer_municipalities").val(municipalities);
+                $("#input_buyer_address1").val(address1);
+              } else {
+                //0件のとき
+              }
+            } else {
+              //見つからなかった場合、もしくは通信問題があった場合
+              console.log(json.message);
+            }
+            console.log(json);
+          })
+          .fail(function () {
+            console.log("通信失敗");
+          });
+      }
 
-				} else {
-					//見つからなかった場合、もしくは通信問題があった場合
-					console.log(json.message);
-				}
-				console.log(json);
-			}).fail(function() {
-				console.log("通信失敗");
-			});
-		}
-	</script>
-</body>
+      $("#test_tel_send").on("click", function () {
+        searchCustomerByTel(0);
+      });
+      var cutomerInfoListForBuyer;
+      function searchCustomerByTel(div) {
+        var tel = "";
+
+        if (div == 0) {
+          //購入者の場合
+          tel = $("#input_buyer_tel").val();
+        } else {
+          //送り先の場合
+          tel = $("#input_destination_tel").val();
+        }
+
+        $.ajax({
+          url: "/nextengine-api/searchCustomer",
+          type: "post",
+          datatype: "json",
+          data: {
+            tel: tel,
+            div: div,
+          },
+        })
+          .done(function (data) {
+            console.log(data);
+            //初期化
+            const customerTable = $("#modal_customer_table tbody");
+            cutomerInfoListForBuyer = data;
+            customerTable.empty();
+
+            //取得した情報分、テーブル行を生成する
+            var contentHtml;
+            // for (var customerInfo of data) {
+            data.forEach((customerInfo, index) => {
+              contentHtml +=
+                "<tr data-customer='" +
+                index +
+                "'><td>" +
+                transformNullToStr(customerInfo.name) +
+                "</td><td>" +
+                transformNullToStr(customerInfo.kana) +
+                "</td><td>" +
+                transformNullToStr(customerInfo.zip_code) +
+                "</td><td>" +
+                transformNullToStr(customerInfo.address1) +
+                "</td><td>" +
+                transformNullToStr(customerInfo.address2) +
+                "</td></tr>";
+            });
+
+            //生成した行を画面に追加
+            customerTable.append(contentHtml);
+
+            //モーダルの表示
+            $("#exampleModal").modal();
+
+            //モーダル内の行に選択されたらマークをつける
+            $("#modal_customer_table tbody tr").on("click", function (event) {
+              if ($(this).hasClass("selected")) {
+                $(this).removeClass("bg-warning selected");
+              } else {
+                $("#modal_customer_table tbody tr").removeClass(
+                  "bg-warning selected"
+                );
+                $(this).addClass("bg-warning selected");
+              }
+            });
+          })
+          .fail(function (data) {
+            console.log(data);
+          });
+      }
+
+      //電話番号検索からのモーダルサブミットした際の挙動定義
+      $("#tel_modal_submit").on("click", function (event) {
+        var customerIndex = $("#modal_customer_table tbody tr.selected").data(
+          "customer"
+        );
+        var customerInfo = cutomerInfoListForBuyer[customerIndex];
+        console.log(customerInfo);
+
+        $("#input_buyer_zipcode").val(customerInfo.zip_code);
+        $("#input_buyer_address1").val(customerInfo.address1);
+        $("#input_buyer_address2").val(customerInfo.address2);
+        $("#input_buyer_name").val(customerInfo.name);
+        $("#input_buyer_furi").val(customerInfo.kana);
+
+        //モーダルの非表示
+        $("#exampleModal").modal("hide");
+      });
+
+      function transformNullToStr(str) {
+        return str == null ? "" : str;
+      }
+    </script>
+  </body>
+</html>

@@ -63,38 +63,39 @@ public class AnalyticsController extends BaseController {
 
         List<ItemInfo> itemRankingList = new ArrayList<ItemInfo>();
 
-        //分析対象が商品ランキングの場合
-        if(StringUtils.equals("itemRank", analyticsDiv)){
+        // 分析対象が商品ランキングの場合
+        if (StringUtils.equals("itemRank", analyticsDiv)) {
 
-            //入力チェック
-            //出荷予定日片方でも入力されてなかったらエラーとする
+            // 入力チェック
+            // 出荷予定日片方でも入力されてなかったらエラーとする
             if (StringUtils.isEmpty(inputStartPickingDate) || StringUtils.isEmpty(inputEndPickingDate)) {
                 displayMessage = "出荷予定日を両方入力してください。";
             } else {
 
-                //両方入力されていた場合
+                // 両方入力されていた場合
 
                 // 出荷予定日から有効な受注伝票番号のリストを取得する
                 Set<String> orderNumberList = getOrderNumberList(_request, inputStartPickingDate, inputEndPickingDate);
 
                 // 受注伝票番号のリストから対象期間の商品ランキングのリストを取得する
                 itemRankingList = getItemRankingList(_request, orderNumberList);
-                if(CollectionUtils.isEmpty(itemRankingList)) {
+                if (CollectionUtils.isEmpty(itemRankingList)) {
                     displayMessage = "検索結果が0件です。";
                 }
             }
         }
-        //画面に商品ランキングリストを返す
-        model.addAttribute("itemRankingList",itemRankingList);
-        //画面表示メッセージを返す
+        // 画面に商品ランキングリストを返す
+        model.addAttribute("itemRankingList", itemRankingList);
+        // 画面表示メッセージを返す
         model.addAttribute("displayMessage", displayMessage);
-        //画面表示を維持するために入力内容を引き継ぐ
+        // 画面表示を維持するために入力内容を引き継ぐ
         model.addAttribute("analyticsInputForm", analyticsInputForm);
         return "analytics";
     }
 
     /**
      * 受注番号リスト取得
+     * 
      * @param _request
      * @param inputStartPickingDate
      * @param inputEndPickingDate
@@ -104,17 +105,17 @@ public class AnalyticsController extends BaseController {
             String inputEndPickingDate) {
         HashSet<String> orderNumberSet = new HashSet<String>();
 
-        //受注情報APIを呼び出し、出荷予定日に適する受注情報を取得する
+        // 受注情報APIを呼び出し、出荷予定日に適する受注情報を取得する
         HashMap<String, Object> orderInfoResponse = neApiExecute(getCurrentToken(_request),
                 NeApiURL.RECEIVEORDER_BASE_SEARCH_PATH,
                 createReceiveOrderApiParam(inputStartPickingDate, inputEndPickingDate));
         @SuppressWarnings("unchecked")
         ArrayList<Map<String, String>> receiveOrderInfoList = (ArrayList<Map<String, String>>) orderInfoResponse
                 .get("data");
-        
-        //空チェック
+
+        // 空チェック
         if (!CollectionUtils.isEmpty(receiveOrderInfoList)) {
-            //受注IDをリストに格納する
+            // 受注IDをリストに格納する
             for (Map<String, String> receiveOrderInfo : receiveOrderInfoList) {
                 orderNumberSet.add(receiveOrderInfo.get("receive_order_id"));
             }
@@ -124,6 +125,7 @@ public class AnalyticsController extends BaseController {
 
     /**
      * 受注情報取得API用のパラメータ設定
+     * 
      * @param inputStartPickingDate
      * @param inputEndPickingDate
      * @return
@@ -150,6 +152,7 @@ public class AnalyticsController extends BaseController {
 
     /**
      * 商品ランキングリスト取得
+     * 
      * @param _request
      * @param orderNumberList
      * @return
@@ -167,14 +170,14 @@ public class AnalyticsController extends BaseController {
                 .get("data");
 
         // 対象期間の商品リストを作成（商品コード、商品名、商品受注数量,受注金額を保持）
-        if(receiveOrderRowInfoList != null){
+        if (receiveOrderRowInfoList != null) {
             for (Map<String, String> receiveOrderRowInfo : receiveOrderRowInfoList) {
                 if (itemInfoMap.containsKey(receiveOrderRowInfo.get("receive_order_row_goods_id"))) {
                     ItemInfo itemInfo = itemInfoMap.get(receiveOrderRowInfo.get("receive_order_row_goods_id"));
                     itemInfo.setShippingAmount(itemInfo.getShippingAmount()
                             + Long.valueOf(receiveOrderRowInfo.get("receive_order_row_quantity")));
                     itemInfo.setSubTotalPrice(itemInfo.getSubTotalPrice()
-                            + new Double(receiveOrderRowInfo.get("receive_order_row_sub_total_price")).longValue());
+                            + Double.valueOf(receiveOrderRowInfo.get("receive_order_row_sub_total_price")).longValue());
                     itemInfoMap.put(receiveOrderRowInfo.get("receive_order_row_goods_id"), itemInfo);
                 } else {
                     ItemInfo itemInfo = new ItemInfo();
@@ -182,7 +185,7 @@ public class AnalyticsController extends BaseController {
                     itemInfo.setItemName(receiveOrderRowInfo.get("receive_order_row_goods_name"));
                     itemInfo.setShippingAmount(Long.valueOf(receiveOrderRowInfo.get("receive_order_row_quantity")));
                     itemInfo.setSubTotalPrice(
-                            new Double(receiveOrderRowInfo.get("receive_order_row_sub_total_price")).longValue());
+                            Double.valueOf(receiveOrderRowInfo.get("receive_order_row_sub_total_price")).longValue());
                     itemInfoMap.put(receiveOrderRowInfo.get("receive_order_row_goods_id"), itemInfo);
                 }
             }
@@ -198,6 +201,7 @@ public class AnalyticsController extends BaseController {
 
     /**
      * 受注明細API呼び出し用のパラメータ設定
+     * 
      * @param orderNumberList
      * @return
      */
