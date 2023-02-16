@@ -43,15 +43,6 @@
         <div id="buyer_area" class="d-block">
           <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="input_buyer_customer_code"> 顧客コード： </label>
-              <input
-                type="text"
-                id="input_buyer_customer_code"
-                class="form-control"
-                placeholder="顧客コード"
-              />
-            </div>
-            <div class="form-group col-md-6">
               <label for="input_buyer_tel"> 電話番号： </label>
               <input
                 type="text"
@@ -140,17 +131,6 @@
         </div>
         <div id="destination_area" class="d-none">
           <div class="form-row">
-            <div class="form-group col-md-6">
-              <label for="input_destination_customer_code">
-                顧客コード：
-              </label>
-              <input
-                type="text"
-                id="input_destination_customer_code"
-                class="form-control"
-                placeholder="顧客コード"
-              />
-            </div>
             <div class="form-group col-md-6">
               <label for="input_destination_tel"> 電話番号： </label>
               <input
@@ -242,14 +222,18 @@
           <div class="form-row">
             <div class="form-group col-md-4">
               <label for="input_order_date"> 受注日： </label>
-              <input type="text" id="input_order_date" class="form-control" />
+              <input
+                type="text"
+                id="input_order_date"
+                class="form-control datepicker"
+              />
             </div>
             <div class="form-group col-md-4">
               <label for="input_shipping_date"> 出荷予定日： </label>
               <input
                 type="text"
                 id="input_shipping_date"
-                class="form-control"
+                class="form-control datepicker"
               />
             </div>
             <div class="form-group col-md-4">
@@ -257,41 +241,168 @@
               <input
                 type="text"
                 id="input_preferred_date"
-                class="form-control"
+                class="form-control datepicker"
               />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group col-md-4">
               <label for="input_preferred_time"> 届け時間帯： </label>
-              <input
-                type="text"
-                id="input_preferred_time"
-                class="form-control"
-              />
+              <select id="input_preferred_time" class="form-control">
+                <option value="1">午前中</option>
+                <option value="3">１４時〜１６時</option>
+                <option value="4">１６時〜１８時</option>
+                <option value="5">１８時〜２０時</option>
+                <option value="6">１９時〜２１時</option>
+              </select>
             </div>
             <div class="form-group col-md-4">
               <label for="input_payment"> 支払方法： </label>
-              <input type="text" id="input_payment" class="form-control" />
+              <select id="input_payment" class="form-control">
+                <option>請求書後払い</option>
+                <option>代引</option>
+                <option>銀行振込前払い</option>
+              </select>
             </div>
             <div class="form-group col-md-4">
               <label for="input_invoice_type"> 送り状種別： </label>
-              <input type="text" id="input_invoice_type" class="form-control" />
+              <select id="input_invoice_type" class="form-control">
+                <option value="0" selected>ヤマトB2V6</option>
+                <option value="1">ゆうぱっく</option>
+                <option value="2">佐川急便</option>
+                <option value="9">伝票不要</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group col-md-4">
               <label for="input_cool"> クール区分： </label>
-              <input type="text" id="input_cool" class="form-control" />
+              <select id="input_cool" class="form-control">
+                <option value="0" selected>常温</option>
+                <option value="1">冷蔵</option>
+                <option value="2">冷凍</option>
+              </select>
             </div>
             <div class="form-group col-md-4">
               <label for="input_postage"> 送料有無： </label>
-              <input type="text" id="input_postage" class="form-control" />
+              <select id="input_postage" class="form-control">
+                <option value="1" selected>有</option>
+                <option value="0">無</option>
+              </select>
             </div>
             <div class="form-group col-md-4">
               <label for="input_total_claim"> 請求額： </label>
-              <input type="text" id="input_total_claim" class="form-control" />
+              <input
+                type="text"
+                id="input_total_claim"
+                class="form-control"
+                readonly
+              />
             </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-check col-md-4">
+              <input
+                type="checkbox"
+                id="input_gift_flag"
+                class="form-check-input"
+              />
+              <label for="input_gift_flag">ギフト用</label>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_remarks">備考欄</label>
+              <textarea
+                type="text"
+                rows="4"
+                id="input_remarks"
+                class="form-control"
+              ></textarea>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="input_for_worker">作業用欄</label>
+              <textarea
+                type="text"
+                rows="4"
+                id="input_for_worker"
+                class="form-control"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <table class="table" id="calc_area">
+              <thead>
+                <tr>
+                  <th>商品計</th>
+                  <th>税金</th>
+                  <th>発送料</th>
+                  <th>手数料</th>
+                  <th>ポイント</th>
+                  <th>その他費用</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="form-row">
+            <table class="table" id="item_input_table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>商品コード</th>
+                  <th>商品名</th>
+                  <th>商品オプション</th>
+                  <th>商品価格</th>
+                  <th>商品数量</th>
+                  <th>消費税率</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="addButton"></div>
+                  </td>
+                  <td>
+                    <input name="item_code" type="text" class="form-control" />
+                  </td>
+                  <td>
+                    <input name="item_name" type="text" class="form-control" />
+                  </td>
+                  <td>
+                    <input
+                      name="item_option"
+                      type="text"
+                      class="form-control"
+                    />
+                  </td>
+                  <td>
+                    <input name="item_price" type="text" class="form-control" />
+                  </td>
+                  <td>
+                    <input
+                      name="item_count"
+                      type="number"
+                      class="form-control"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="item_taxrate"
+                      type="text"
+                      class="form-control"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </form>
@@ -385,7 +496,35 @@
       </div>
     </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.js"></script>
     <script type="text/javascript">
+      //商品一覧の＋ボタン押下時の処理定義
+      $("#item_input_table").on("click", ".addButton", function () {
+        if ($(this).hasClass("clicked")) {
+          //列削除
+          $(this).parent().parent().remove();
+        } else {
+          //行追加
+          var appendRowStr =
+            "<tr><td><div class='addButton'></div></td><td><input name='item_code' type='text' class='form-control' /></td><td><input name='item_name' type='text' class='form-control' /></td><td><input name='item_option' type='text' class='form-control' /></td><td><input name='item_price' type='text' class='form-control' /></td><td><input name='item_count' type='number' class='form-control' /></td><td><input name='item_taxrate' type='text' class='form-control' /></td></tr>";
+          $("#item_input_table tbody").append(appendRowStr);
+          $(this).toggleClass("clicked");
+        }
+      });
+
+      //datepickerクラスをもつinputフォームへdatepickerの反映
+      $("input.datepicker").datepicker({
+        dateFormat: "yy/mm/dd",
+      });
+      //受注日エリアへのdatepickerの反映（初期値に当日の日付を入れる）
+      $("#input_order_date").datepicker(
+        "setDate",
+        //当日の日付を記入
+        moment().format("YYYY/MM/DD")
+      );
+
+      //購入者・届け先・商品配達費金額などのボタンの切り替え処理定義
       $("input[name='options']").change(function () {
         var division = $(this).val();
 
@@ -410,13 +549,16 @@
         }
       });
 
+      //郵便番号欄を入力したあとのフォーカスを外したときの処理定義
       $("#input_buyer_zipcode,#input_destination_zipcode").blur(
         searchAddressFromZipcode
       );
+      //〒→住所ボタン押下時の定義
       $("#append_input_buyer_zipcode,#append_input_destination_zipcode").on(
         "click",
         searchAddressFromZipcode
       );
+      //郵便番号から住所情報を取得するAPI利用処理
       function searchAddressFromZipcode() {
         $.ajax({
           url: "https://zipcloud.ibsnet.co.jp/api/search",
@@ -453,9 +595,11 @@
                     var addresses = selected_value[0].split(" ");
 
                     //入力フォームに検索結果を入力
-                    $("#input_buyer_pref").val(addresses[0]);
-                    $("#input_buyer_municipalities").val(addresses[1]);
-                    $("#input_buyer_address1").val(addresses[2]);
+                    // $("#input_buyer_pref").val(addresses[0]);
+                    // $("#input_buyer_municipalities").val(addresses[1]);
+                    $("#input_buyer_address1").val(
+                      addresses[0] + addresses[1] + addresses[2]
+                    );
                   } else {
                     console.log("ごめんなさい一つだけせんたくしてください。");
                   }
@@ -464,13 +608,16 @@
                 });
               } else if (results.length == 1) {
                 //1件だけ該当の住所が存在するとき
-                var pref = results[0].address1;
-                var municipalities = results[0].address2;
-                var address1 = results[0].address3;
+                // var pref = results[0].address1;
+                // var municipalities = results[0].address2;
+                var address1 =
+                  results[0].address1 +
+                  results[0].address2 +
+                  results[0].address3;
 
                 //入力フォームに検索結果を入力
-                $("#input_buyer_pref").val(pref);
-                $("#input_buyer_municipalities").val(municipalities);
+                // $("#input_buyer_pref").val(pref);
+                // $("#input_buyer_municipalities").val(municipalities);
                 $("#input_buyer_address1").val(address1);
               } else {
                 //0件のとき
@@ -486,9 +633,28 @@
           });
       }
 
+      //テスト送信ボタン処理
       $("#test_tel_send").on("click", function () {
-        searchCustomerByTel(0);
+        searchCustomerByTel(1);
       });
+
+      //購入者欄電話番号欄でエンターキーを押された場合の処理
+      $("#input_buyer_tel").keypress(function (e) {
+        if (e.keyCode == 13) {
+          searchCustomerByTel(0);
+          return false;
+        }
+      });
+      //届け先欄電話番号欄でエンターキーを押された場合の処理
+      $("#input_destination_tel").keypress(function (e) {
+        if (e.keyCode == 13) {
+          searchCustomerByTel(1);
+          return false;
+        }
+      });
+
+      //電話番号から顧客情報を取得する処理
+      //NEAPIを使用します。
       var cutomerInfoListForBuyer;
       function searchCustomerByTel(div) {
         var tel = "";
@@ -540,9 +706,6 @@
             //生成した行を画面に追加
             customerTable.append(contentHtml);
 
-            //モーダルの表示
-            $("#exampleModal").modal();
-
             //モーダル内の行に選択されたらマークをつける
             $("#modal_customer_table tbody tr").on("click", function (event) {
               if ($(this).hasClass("selected")) {
@@ -554,29 +717,40 @@
                 $(this).addClass("bg-warning selected");
               }
             });
+
+            //電話番号検索からのモーダルサブミットした際の挙動定義
+            $("#tel_modal_submit").off("click");
+            $("#tel_modal_submit").on("click", function (event) {
+              var customerIndex = $(
+                "#modal_customer_table tbody tr.selected"
+              ).data("customer");
+              var customerInfo = cutomerInfoListForBuyer[customerIndex];
+              console.log(customerInfo);
+
+              if (div == 0) {
+                $("#input_buyer_zipcode").val(customerInfo.zip_code);
+                $("#input_buyer_address1").val(customerInfo.address1);
+                $("#input_buyer_address2").val(customerInfo.address2);
+                $("#input_buyer_name").val(customerInfo.name);
+                $("#input_buyer_furi").val(customerInfo.kana);
+              } else if (div == 1) {
+                $("#input_destination_zipcode").val(customerInfo.zip_code);
+                $("#input_destination_address1").val(customerInfo.address1);
+                $("#input_destination_address2").val(customerInfo.address2);
+                $("#input_destination_name").val(customerInfo.name);
+                $("#input_destination_furi").val(customerInfo.kana);
+              }
+              //モーダルの非表示
+              $("#exampleModal").modal("hide");
+            });
+
+            //モーダルの表示
+            $("#exampleModal").modal();
           })
           .fail(function (data) {
             console.log(data);
           });
       }
-
-      //電話番号検索からのモーダルサブミットした際の挙動定義
-      $("#tel_modal_submit").on("click", function (event) {
-        var customerIndex = $("#modal_customer_table tbody tr.selected").data(
-          "customer"
-        );
-        var customerInfo = cutomerInfoListForBuyer[customerIndex];
-        console.log(customerInfo);
-
-        $("#input_buyer_zipcode").val(customerInfo.zip_code);
-        $("#input_buyer_address1").val(customerInfo.address1);
-        $("#input_buyer_address2").val(customerInfo.address2);
-        $("#input_buyer_name").val(customerInfo.name);
-        $("#input_buyer_furi").val(customerInfo.kana);
-
-        //モーダルの非表示
-        $("#exampleModal").modal("hide");
-      });
 
       function transformNullToStr(str) {
         return str == null ? "" : str;

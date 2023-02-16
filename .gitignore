@@ -1,1 +1,4 @@
 .vscode/settings.json
+.DS_Store
+nextengine-api/src/main/resources/ne-api.properties
+nextengine-api/src/main/resources/TokenForLineBatch.properties
