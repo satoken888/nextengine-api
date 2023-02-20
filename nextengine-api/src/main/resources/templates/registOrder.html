@@ -8,7 +8,7 @@
   <body>
     <div th:replace="common :: header"></div>
 
-    <div class="container">
+    <div class="container-fluid">
       <h1>受注登録画面</h1>
 
       <div
@@ -42,30 +42,6 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-
-      <div class="btn-group btn-group-toggle mb-4" data-toggle="buttons">
-        <label class="btn btn-primary active">
-          <input
-            type="radio"
-            name="options"
-            autocomplete="off"
-            value="1"
-            checked
-          />
-          購入者
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" name="options" autocomplete="off" value="2" />
-          届け先
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" name="options" autocomplete="off" value="3" />
-          商品・配達日・金額など
-        </label>
-        <button type="button" class="btn btn-primary" id="test_tel_send">
-          テスト送信
-        </button>
-      </div>
       <form
         id="registOrderForm"
         th:action="@{/registOrder}"
@@ -73,401 +49,500 @@
         th:object="${registOrderInputForm}"
         method="post"
       >
-        <div id="buyer_area" class="d-block">
-          <div class="form-row">
-            <div class="form-group col-md-6">
-              <label for="input_buyer_tel"> 電話番号： </label>
-              <input
-                type="text"
-                id="input_buyer_tel"
-                class="form-control"
-                placeholder="000-0000-0000"
-                name="buyerTel"
-              />
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_buyer_zipcode"> 郵便番号： </label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  id="input_buyer_zipcode"
-                  class="form-control"
-                  placeholder="0000000"
-                  name="buyerZipcode"
-                />
-                <div class="input-group-append">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    id="append_input_buyer_zipcode"
-                  >
-                    〒→住所
-                  </button>
+        <div class="row">
+          <div class="col-8">
+            <div id="buyer_area" class="d-block">
+              <div
+                style="
+                  text-align: center;
+                  background-color: antiquewhite;
+                  border: 1px solid #000000;
+                "
+              >
+                送り主情報
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="input_buyer_tel"> 電話番号： </label>
+                  <input
+                    type="text"
+                    id="input_buyer_tel"
+                    class="form-control"
+                    placeholder="000-0000-0000"
+                    name="buyerTel"
+                  />
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="input_buyer_zipcode"> 郵便番号： </label>
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      id="input_buyer_zipcode"
+                      class="form-control"
+                      placeholder="0000000"
+                      name="buyerZipcode"
+                    />
+                    <div class="input-group-append">
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        id="append_input_buyer_zipcode"
+                      >
+                        〒→住所
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="input_buyer_address1"> 住所１： </label>
+                  <input
+                    type="text"
+                    id="input_buyer_address1"
+                    class="form-control"
+                    placeholder="住所１"
+                    name="buyerAddress1"
+                  />
+                </div>
+                <div class="form-group col-6">
+                  <label for="input_buyer_address2"> 住所２： </label>
+                  <input
+                    type="text"
+                    id="input_buyer_address2"
+                    class="form-control"
+                    placeholder="住所２"
+                    name="buyerAddress2"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="input_buyer_name"> お名前： </label>
+                  <input
+                    type="text"
+                    id="input_buyer_name"
+                    class="form-control"
+                    placeholder="注文者名"
+                    name="buyerName"
+                  />
+                </div>
+                <div class="form-group col-6">
+                  <label for="input_buyer_furi"> フリガナ： </label>
+                  <input
+                    type="text"
+                    id="input_buyer_furi"
+                    class="form-control"
+                    placeholder="チュウモンシャメイ"
+                    name="buyerKana"
+                  />
                 </div>
               </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="input_buyer_address1"> 住所１： </label>
-            <input
-              type="text"
-              id="input_buyer_address1"
-              class="form-control"
-              placeholder="住所１"
-              name="buyerAddress1"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_buyer_address2"> 住所２： </label>
-            <input
-              type="text"
-              id="input_buyer_address2"
-              class="form-control"
-              placeholder="住所２"
-              name="buyerAddress2"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_buyer_name"> お名前： </label>
-            <input
-              type="text"
-              id="input_buyer_name"
-              class="form-control"
-              placeholder="注文者名"
-              name="buyerName"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_buyer_furi"> フリガナ： </label>
-            <input
-              type="text"
-              id="input_buyer_furi"
-              class="form-control"
-              placeholder="チュウモンシャメイ"
-              name="buyerKana"
-            />
-          </div>
-        </div>
-        <div id="destination_area" class="d-none">
-          <div class="form-row">
-            <div class="col-md-2">
-              <button class="btn btn-primary" type="button" id="same_delivery">
-                注文者と同じ
-              </button>
-            </div>
-            <div class="form-group col-md-6">
-              <label for="input_destination_tel"> 電話番号： </label>
-              <input
-                type="text"
-                id="input_destination_tel"
-                class="form-control"
-                placeholder="000-0000-0000"
-                name="destTel"
-              />
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_destination_zipcode"> 郵便番号： </label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  id="input_destination_zipcode"
-                  class="form-control"
-                  placeholder="0000000"
-                  name="destZipCode"
-                />
-                <div class="input-group-append">
+            <div id="destination_area" class="d-block">
+              <div
+                style="
+                  text-align: center;
+                  background-color: antiquewhite;
+                  border: 1px solid #000000;
+                "
+              >
+                お届け先情報
+              </div>
+              <div class="form-row">
+                <div class="col-md-2">
                   <button
-                    class="btn btn-outline-secondary"
+                    class="btn btn-primary"
                     type="button"
-                    id="append_input_destination_zipcode"
+                    id="same_delivery"
+                    style="margin-top: 43px; margin-left: 10px"
                   >
-                    〒→住所
+                    注文者と同じ
                   </button>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_destination_tel"> 電話番号： </label>
+                  <input
+                    type="text"
+                    id="input_destination_tel"
+                    class="form-control"
+                    placeholder="000-0000-0000"
+                    name="destTel"
+                  />
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="input_destination_zipcode"> 郵便番号： </label>
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      id="input_destination_zipcode"
+                      class="form-control"
+                      placeholder="0000000"
+                      name="destZipCode"
+                    />
+                    <div class="input-group-append">
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        id="append_input_destination_zipcode"
+                      >
+                        〒→住所
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="input_destination_address1"> 住所１： </label>
+                  <input
+                    type="text"
+                    id="input_destination_address1"
+                    class="form-control"
+                    placeholder="住所１"
+                    name="destAddress1"
+                  />
+                </div>
+                <div class="form-group col-6">
+                  <label for="input_destination_address2"> 住所２： </label>
+                  <input
+                    type="text"
+                    id="input_destination_address2"
+                    class="form-control"
+                    placeholder="住所２"
+                    name="destAddress2"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="input_destination_name"> お名前： </label>
+                  <input
+                    type="text"
+                    id="input_destination_name"
+                    class="form-control"
+                    placeholder="届け先名"
+                    name="destName"
+                  />
+                </div>
+                <div class="form-group col-6">
+                  <label for="input_destination_furi"> フリガナ： </label>
+                  <input
+                    type="text"
+                    id="input_destination_furi"
+                    class="form-control"
+                    placeholder="トドケサキメイ"
+                    name="destKana"
+                  />
                 </div>
               </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="input_destination_address1"> 住所１： </label>
-            <input
-              type="text"
-              id="input_destination_address1"
-              class="form-control"
-              placeholder="住所１"
-              name="destAddress1"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_destination_address2"> 住所２： </label>
-            <input
-              type="text"
-              id="input_destination_address2"
-              class="form-control"
-              placeholder="住所２"
-              name="destAddress2"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_destination_name"> お名前： </label>
-            <input
-              type="text"
-              id="input_destination_name"
-              class="form-control"
-              placeholder="届け先名"
-              name="destName"
-            />
-          </div>
-          <div class="form-group">
-            <label for="input_destination_furi"> フリガナ： </label>
-            <input
-              type="text"
-              id="input_destination_furi"
-              class="form-control"
-              placeholder="トドケサキメイ"
-              name="destKana"
-            />
-          </div>
-        </div>
-        <div id="information_area" class="d-none">
-          <div class="form-row">
-            <div class="form-group col-md-4">
-              <label for="input_order_date"> 受注日： </label>
-              <input
-                type="text"
-                id="input_order_date"
-                class="form-control datepicker"
-                name="orderDate"
-              />
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_shipping_date"> 出荷予定日： </label>
-              <input
-                type="text"
-                id="input_shipping_date"
-                class="form-control datepicker"
-              />
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_preferred_date"> 配達希望日： </label>
-              <input
-                type="text"
-                id="input_preferred_date"
-                class="form-control datepicker"
-                name="deliveryDate"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-md-4">
-              <label for="input_preferred_time"> 届け時間帯： </label>
-              <select
-                id="input_preferred_time"
-                class="form-control"
-                name="shippingTimeZone"
+            <div id="item_detail_area" class="d-block">
+              <div
+                style="
+                  text-align: center;
+                  background-color: antiquewhite;
+                  border: 1px solid #000000;
+                "
               >
-                <option value="午前中">午前中</option>
-                <option value="14時-16時">１４時〜１６時</option>
-                <option value="16時-18時">１６時〜１８時</option>
-                <option value="18時-20時">１８時〜２０時</option>
-                <option value="19時-21時">１９時〜２１時</option>
-              </select>
+                商品情報
+              </div>
+              <div class="form-row">
+                <table class="table table-bordered" id="calc_area">
+                  <thead>
+                    <tr>
+                      <th>商品計</th>
+                      <th>税金</th>
+                      <th>発送料</th>
+                      <th>手数料</th>
+                      <th>ポイント</th>
+                      <th>その他費用</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input
+                          name="itemAllPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="taxPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="shippingPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="commisionPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="usePoint"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="otherPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="form-row">
+                <table class="table" id="item_input_table">
+                  <thead>
+                    <tr>
+                      <th style="width: 5%"></th>
+                      <th style="width: 10%">商品コード</th>
+                      <th style="width: 40%">商品名</th>
+                      <th style="width: 15%">商品オプション</th>
+                      <th style="width: 10%">商品価格</th>
+                      <th style="width: 10%">商品数量</th>
+                      <th style="width: 10%">消費税率</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="addButton"></div>
+                      </td>
+                      <td>
+                        <input
+                          name="itemCode"
+                          type="text"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="itemName"
+                          type="text"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="itemOption"
+                          type="text"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="itemPrice"
+                          type="text"
+                          class="form-control calcItems"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="itemCount"
+                          type="number"
+                          class="form-control calcItems"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="itemTaxRate"
+                          type="text"
+                          class="form-control calcItems"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="form-group col-md-4">
-              <label for="input_payment"> 支払方法： </label>
-              <select
-                id="input_payment"
-                class="form-control"
-                name="paymentMethod"
+          </div>
+          <div class="col-4" style="border-left: 1px solid #d3d3d3">
+            <div
+              id="information_area"
+              class="d-block"
+              style="position: sticky; top: 72px"
+            >
+              <div
+                class="btn-group btn-group-toggle mb-4"
+                data-toggle="buttons"
               >
-                <option>請求書後払い</option>
-                <option>代引</option>
-                <option>銀行振込前払い</option>
-              </select>
+                <!--
+              <label class="btn btn-primary active">
+                <input
+                  type="radio"
+                  name="options"
+                  autocomplete="off"
+                  value="1"
+                  checked
+                />
+                購入者
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" autocomplete="off" value="2" />
+                届け先
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" autocomplete="off" value="3" />
+                商品・配達日・金額など
+              </label>
+              -->
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="test_tel_send"
+                >
+                  テスト送信
+                </button>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-６">
+                  <label for="input_order_date"> 受注日： </label>
+                  <input
+                    type="text"
+                    id="input_order_date"
+                    class="form-control datepicker"
+                    name="orderDate"
+                  />
+                </div>
+                <div class="form-group col-md-６">
+                  <label for="input_shipping_date"> 出荷予定日： </label>
+                  <input
+                    type="text"
+                    id="input_shipping_date"
+                    class="form-control datepicker"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="input_preferred_date"> 配達希望日： </label>
+                  <input
+                    type="text"
+                    id="input_preferred_date"
+                    class="form-control datepicker"
+                    name="deliveryDate"
+                  />
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_preferred_time"> 届け時間帯： </label>
+                  <select
+                    id="input_preferred_time"
+                    class="form-control"
+                    name="shippingTimeZone"
+                  >
+                    <option value="午前中">午前中</option>
+                    <option value="14時-16時">１４時〜１６時</option>
+                    <option value="16時-18時">１６時〜１８時</option>
+                    <option value="18時-20時">１８時〜２０時</option>
+                    <option value="19時-21時">１９時〜２１時</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="input_payment"> 支払方法： </label>
+                  <select
+                    id="input_payment"
+                    class="form-control"
+                    name="paymentMethod"
+                  >
+                    <option>請求書後払い</option>
+                    <option>代引</option>
+                    <option>銀行振込前払い</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_invoice_type"> 送り状種別： </label>
+                  <select
+                    id="input_invoice_type"
+                    class="form-control"
+                    name="shippingMethod"
+                  >
+                    <option value="ヤマト運輸" selected>ヤマトB2V6</option>
+                    <option value="ゆうぱっく">ゆうぱっく</option>
+                    <option value="佐川急便">佐川急便</option>
+                    <option value="伝票不要">伝票不要</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="input_cool"> クール区分： </label>
+                  <select id="input_cool" class="form-control">
+                    <option value="0" selected>常温</option>
+                    <option value="1">冷蔵</option>
+                    <option value="2">冷凍</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_postage"> 送料有無： </label>
+                  <select id="input_postage" class="form-control">
+                    <option value="1" selected>有</option>
+                    <option value="0">無</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input_total_claim"> 請求額： </label>
+                <input
+                  type="text"
+                  id="input_total_claim"
+                  class="form-control"
+                  value="0"
+                  name="billingPrice"
+                  readonly
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="input_remarks">備考欄</label>
+                  <textarea
+                    type="text"
+                    rows="4"
+                    id="input_remarks"
+                    class="form-control"
+                    name="remarks"
+                  ></textarea>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_for_worker">作業用欄</label>
+                  <textarea
+                    type="text"
+                    rows="4"
+                    id="input_for_worker"
+                    class="form-control"
+                    name="workerArea"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="form-group form-check col-md-4">
+                <input
+                  type="checkbox"
+                  id="input_gift_flag"
+                  class="form-check-input"
+                  name="giftFlag"
+                />
+                <label for="input_gift_flag">ギフト用</label>
+              </div>
             </div>
-            <div class="form-group col-md-4">
-              <label for="input_invoice_type"> 送り状種別： </label>
-              <select
-                id="input_invoice_type"
-                class="form-control"
-                name="shippingMethod"
-              >
-                <option value="ヤマト運輸" selected>ヤマトB2V6</option>
-                <option value="ゆうぱっく">ゆうぱっく</option>
-                <option value="佐川急便">佐川急便</option>
-                <option value="伝票不要">伝票不要</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-md-4">
-              <label for="input_cool"> クール区分： </label>
-              <select id="input_cool" class="form-control">
-                <option value="0" selected>常温</option>
-                <option value="1">冷蔵</option>
-                <option value="2">冷凍</option>
-              </select>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_postage"> 送料有無： </label>
-              <select id="input_postage" class="form-control">
-                <option value="1" selected>有</option>
-                <option value="0">無</option>
-              </select>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_total_claim"> 請求額： </label>
-              <input
-                type="text"
-                id="input_total_claim"
-                class="form-control"
-                value="0"
-                name="billingPrice"
-                readonly
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group form-check col-md-4">
-              <input
-                type="checkbox"
-                id="input_gift_flag"
-                class="form-check-input"
-                name="giftFlag"
-              />
-              <label for="input_gift_flag">ギフト用</label>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_remarks">備考欄</label>
-              <textarea
-                type="text"
-                rows="4"
-                id="input_remarks"
-                class="form-control"
-                name="remarks"
-              ></textarea>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="input_for_worker">作業用欄</label>
-              <textarea
-                type="text"
-                rows="4"
-                id="input_for_worker"
-                class="form-control"
-                name="workerArea"
-              ></textarea>
-            </div>
-          </div>
-          <div class="form-row">
-            <table class="table table-bordered" id="calc_area">
-              <thead>
-                <tr>
-                  <th>商品計</th>
-                  <th>税金</th>
-                  <th>発送料</th>
-                  <th>手数料</th>
-                  <th>ポイント</th>
-                  <th>その他費用</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input
-                      name="itemAllPrice"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="taxPrice"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="shippingPrice"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="commisionPrice"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="usePoint"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="otherPrice"
-                      class="form-control calcBilling"
-                      value="0"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="form-row">
-            <table class="table" id="item_input_table">
-              <thead>
-                <tr>
-                  <th style="width: 5%"></th>
-                  <th style="width: 10%">商品コード</th>
-                  <th style="width: 40%">商品名</th>
-                  <th style="width: 15%">商品オプション</th>
-                  <th style="width: 10%">商品価格</th>
-                  <th style="width: 10%">商品数量</th>
-                  <th style="width: 10%">消費税率</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div class="addButton"></div>
-                  </td>
-                  <td>
-                    <input name="itemCode" type="text" class="form-control" />
-                  </td>
-                  <td>
-                    <input name="itemName" type="text" class="form-control" />
-                  </td>
-                  <td>
-                    <input name="itemOption" type="text" class="form-control" />
-                  </td>
-                  <td>
-                    <input
-                      name="itemPrice"
-                      type="text"
-                      class="form-control calcItems"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="itemCount"
-                      type="number"
-                      class="form-control calcItems"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      name="itemTaxRate"
-                      type="text"
-                      class="form-control calcItems"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
       </form>
