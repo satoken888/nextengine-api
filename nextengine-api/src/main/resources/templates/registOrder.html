@@ -248,66 +248,6 @@
                 商品情報
               </div>
               <div class="form-row">
-                <table class="table table-bordered" id="calc_area">
-                  <thead>
-                    <tr>
-                      <th>商品計</th>
-                      <th>税金</th>
-                      <th>発送料</th>
-                      <th>手数料</th>
-                      <th>ポイント</th>
-                      <th>その他費用</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input
-                          name="itemAllPrice"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="taxPrice"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="shippingPrice"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="commisionPrice"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="usePoint"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="otherPrice"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="form-row">
                 <table class="table" id="item_input_table">
                   <thead>
                     <tr>
@@ -383,26 +323,6 @@
                 class="btn-group btn-group-toggle mb-4"
                 data-toggle="buttons"
               >
-                <!--
-              <label class="btn btn-primary active">
-                <input
-                  type="radio"
-                  name="options"
-                  autocomplete="off"
-                  value="1"
-                  checked
-                />
-                購入者
-              </label>
-              <label class="btn btn-primary">
-                <input type="radio" name="options" autocomplete="off" value="2" />
-                届け先
-              </label>
-              <label class="btn btn-primary">
-                <input type="radio" name="options" autocomplete="off" value="3" />
-                商品・配達日・金額など
-              </label>
-              -->
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -499,6 +419,76 @@
                   </select>
                 </div>
               </div>
+              <div class="form-row">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>商品計</th>
+                      <th>税金</th>
+                      <th>発送料</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input
+                          name="itemAllPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="taxPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="shippingPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>手数料</th>
+                      <th>ポイント</th>
+                      <th>その他費用</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input
+                          name="commisionPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="usePoint"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          name="otherPrice"
+                          class="form-control calcBilling"
+                          value="0"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div class="form-group">
                 <label for="input_total_claim"> 請求額： </label>
                 <input
@@ -507,12 +497,13 @@
                   class="form-control"
                   value="0"
                   name="billingPrice"
+                  style="height: 80px; font-size: 50px; color: red"
                   readonly
                 />
               </div>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-6 d-none">
                   <label for="input_remarks">備考欄</label>
                   <textarea
                     type="text"
@@ -523,7 +514,17 @@
                   ></textarea>
                 </div>
                 <div class="form-group col-md-6">
-                  <label for="input_for_worker">作業用欄</label>
+                  <label for="invoice_write">伝票記載事項</label>
+                  <textarea
+                    type="text"
+                    rows="4"
+                    id="invoice_write"
+                    class="form-control"
+                    name="invoice_write"
+                  ></textarea>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="input_for_worker">本受注についての留意事項</label>
                   <textarea
                     type="text"
                     rows="4"
@@ -695,6 +696,40 @@
         $("#input_destination_furi").val($("#input_buyer_furi").val());
       });
 
+      //支払い方法を変更した場合の処理
+      $("#input_payment").on("change", function (event) {
+        if ($(this).val() == "代引") {
+          //代引き手数料の再計算処理を行う
+          calcCODCharge();
+        } else {
+          //手数料の金額を初期化する
+          $("input[name='commisionPrice']").val(0);
+        }
+        //請求額の計算処理を行う
+        calcBillingPrice();
+      });
+
+      function calcCODCharge() {
+        var targetPrice = 0;
+        var commisionPrice;
+        targetPrice += Number($("input[name='itemAllPrice']").val());
+        targetPrice += Number($("input[name='taxPrice']").val());
+        targetPrice -= Number($("input[name='usePoint']").val());
+        targetPrice += Number($("input[name='otherPrice']").val());
+
+        if (targetPrice >= 100000) {
+          commisionPrice = 1100;
+        } else if (targetPrice >= 30000) {
+          commisionPrice = 660;
+        } else if (targetPrice >= 10000) {
+          commisionPrice = 440;
+        } else {
+          commisionPrice = 330;
+        }
+
+        $("input[name='commisionPrice']").val(commisionPrice);
+      }
+
       //商品一覧の＋ボタン押下時の処理定義
       $("#item_input_table").on("click", ".addButton", function () {
         if ($(this).hasClass("clicked")) {
@@ -832,6 +867,7 @@
       //テスト送信ボタン処理
       $("#test_tel_send").on("click", function () {
         // callSearchGoodsApi("0100");
+        $("#input_remarks").val($("#invoice_write").val());
         $("#registOrderForm").submit();
       });
 
@@ -889,6 +925,17 @@
                 $(this).addClass("bg-warning selected");
               }
             });
+            //ダブルクリック時の処理
+            $("#modal_iteminfo_table tbody tr").on(
+              "dblclick",
+              function (event) {
+                $("#modal_iteminfo_table tbody tr").removeClass(
+                  "bg-warning selected"
+                );
+                $(this).addClass("bg-warning selected");
+                $("#modal_iteminfo_OK_button").click();
+              }
+            );
 
             $("#modal_iteminfo_OK_button").off("click");
             $("#modal_iteminfo_OK_button").on("click", function (event) {
@@ -1013,6 +1060,17 @@
                 $(this).addClass("bg-warning selected");
               }
             });
+            //ダブルクリックしたら選択したことにする
+            $("#modal_customer_table tbody tr").on(
+              "dblclick",
+              function (event) {
+                $("#modal_customer_table tbody tr").removeClass(
+                  "bg-warning selected"
+                );
+                $(this).addClass("bg-warning selected");
+                $("#tel_modal_submit").click();
+              }
+            );
 
             //電話番号検索からのモーダルサブミットした際の挙動定義
             $("#tel_modal_submit").off("click");
@@ -1074,6 +1132,10 @@
 
         $("input[name='itemAllPrice']").val(itemAllPrice);
         $("input[name='taxPrice']").val(taxPrice);
+        if ($("#input_payment").val() == "代引") {
+          //代引き手数料の計算処理を行う
+          calcCODCharge();
+        }
         calcBillingPrice();
       }
 
