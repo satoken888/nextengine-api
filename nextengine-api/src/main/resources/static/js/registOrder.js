@@ -541,10 +541,10 @@ var YAMATO_SHIPPING_COSTS = new Map()
   .set("宮崎県", 1200)
   .set("鹿児島県", 1200)
   .set("沖縄県", 2500);
-var YAMATO_SHIPPING_COSTS_ENTRY = YAMATO_SHIPPING_COSTS.entries();
 
 //送料計算処理
 function calcShippingCost() {
+  var YAMATO_SHIPPING_COSTS_ENTRY = YAMATO_SHIPPING_COSTS.entries();
   //送り先住所を取得
   var address = $("#input_destination_address1").val();
   //住所が入力されている場合
@@ -554,7 +554,15 @@ function calcShippingCost() {
       var reg = new RegExp("^" + key);
       var changed = false;
       if (reg.test(address)) {
-        //文字列の頭が合致する都道府県があった場合、
+        //文字列の頭が合致する都道府県があった場合
+
+        //クール区分になっているか確認
+        if ($("#input_cool").val() != 0) {
+          //クール区分が冷蔵or冷凍の場合
+          //クール便手数料330円を追加する
+          value += 330;
+        }
+
         //送料欄に適する送料を入力する
         $("input[name='shippingPrice']").val(value);
         changed = true;
@@ -578,4 +586,41 @@ function calcShippingCost() {
 
 $("#input_destination_address1").on("change", function () {
   calcShippingCost();
+});
+
+var cool_flag = false;
+$("#input_cool").on("change", function () {
+  const COOL_COST = 330;
+  var cool_div = $(this).val();
+  var current = $("input[name='shippingPrice']").val();
+  var addCost = 0;
+  if (cool_div == 0) {
+    //常温を選択した場合
+
+    if (!cool_div) {
+      //もともと常温だった場合
+    } else {
+      //もともとクールの状態で常温に変更した場合
+      addCost = -1 * COOL_COST;
+      cool_flag = false;
+    }
+  } else if (cool_div == 1 || cool_div == 2) {
+    //冷蔵または冷凍を選択した場合
+
+    //もともとクールの状態でなかった場合
+    if (!cool_flag) {
+      addCost = COOL_COST;
+      cool_flag = true;
+    } else {
+      //もともとクールの状態だった場合
+      //何も変更なし
+    }
+  }
+
+  //現状の金額が0でない場合
+  if (current != 0) {
+    cost = Number(current) + addCost;
+    $("input[name='shippingPrice']").val(cost);
+    calcBillingPrice();
+  }
 });
