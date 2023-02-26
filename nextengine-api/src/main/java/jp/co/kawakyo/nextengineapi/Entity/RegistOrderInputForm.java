@@ -93,6 +93,9 @@ public class RegistOrderInputForm {
     /** 備考 */
     String remarks;
 
+    /** 発送伝票備考欄 */
+    String invoiceWrite;
+
     /** 商品名 */
     String itemName;
 
@@ -134,4 +137,7 @@ public class RegistOrderInputForm {
     /** メッセージ */
     // 画面には表示なし
     String message;
+
+    /** 温度帯 */
+    String coolDiv;
 }

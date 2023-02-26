@@ -380,6 +380,7 @@
                     class="form-control"
                     name="shippingTimeZone"
                   >
+                    <option value="指定なし">指定なし</option>
                     <option value="午前中">午前中</option>
                     <option value="14時-16時">１４時〜１６時</option>
                     <option value="16時-18時">１６時〜１８時</option>
@@ -399,6 +400,7 @@
                     <option>請求書後払い</option>
                     <option>代引</option>
                     <option>銀行振込前払い</option>
+                    <option>現金</option>
                   </select>
                 </div>
                 <div class="form-group col-md-6">
@@ -420,7 +422,7 @@
               <div class="form-row">
                 <div class="form-group col-md-6">
                   <label for="input_cool"> クール区分： </label>
-                  <select id="input_cool" class="form-control">
+                  <select id="input_cool" class="form-control" name="coolDiv">
                     <option value="0" selected>常温</option>
                     <option value="1">冷蔵</option>
                     <option value="2">冷凍</option>
@@ -532,7 +534,7 @@
                     rows="4"
                     id="invoice_write"
                     class="form-control"
-                    name="invoice_write"
+                    name="invoiceWrite"
                   ></textarea>
                 </div>
                 <div class="form-group col-md-6">

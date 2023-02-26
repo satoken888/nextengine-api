@@ -63,11 +63,43 @@ public class ReceiveOrderController extends BaseController {
 	private HashMap<String, String> createOrderUploadApiParam(RegistOrderInputForm inputForm) {
 		HashMap<String, String> result = new HashMap<String, String>();
 
+		// 備考欄の文字列を作成する
+		inputForm.setRemarks(modifyRemarks(inputForm));
+
+		// result.put("receive_order_upload_pattern_id", "7");
 		result.put("receive_order_upload_pattern_id", "8");
 		result.put("data_type_1", "csv");
 		result.put("data_1", createUploadCsvStr(inputForm));
 
 		return result;
+	}
+
+	/**
+	 * 備考欄の項目の整理
+	 *
+	 * 画面から入力されたピッキング指示や発送伝票備考欄について、
+	 * 受注伝票画面に反映させるために変換
+	 * （別途、備考欄変換の設定をNE側に設定済み）
+	 *
+	 * @param inputForm
+	 * @return
+	 */
+	private String modifyRemarks(RegistOrderInputForm inputForm) {
+		String rtn = "";
+
+		if (StringUtils.isNotBlank(inputForm.getWorkerArea()))
+			rtn += "【ピッキング指示：" + inputForm.getWorkerArea() + "】";
+		if (StringUtils.isNotBlank(inputForm.getInvoiceWrite()))
+			rtn += "【発送伝票備考欄：" + inputForm.getInvoiceWrite() + "】";
+		if (StringUtils.equals(inputForm.getCoolDiv(), "0")) {
+			rtn += "【温度帯：常温】";
+		} else if (StringUtils.equals(inputForm.getCoolDiv(), "1")) {
+			rtn += "【温度帯：冷蔵】";
+		} else if (StringUtils.equals(inputForm.getCoolDiv(), "2")) {
+			rtn += "【温度帯：冷凍】";
+		}
+
+		return rtn;
 	}
 
 	private String createUploadCsvStr(RegistOrderInputForm inputForm) {
