@@ -423,6 +423,9 @@ function searchCustomerByTel(div) {
           $("#input_destination_address2").val(customerInfo.address2);
           $("#input_destination_name").val(customerInfo.name);
           $("#input_destination_furi").val(customerInfo.kana);
+
+          //送り先住所を入力した際は送料再計算処理を実施する
+          calcShippingCost();
         }
         //モーダルの非表示
         $("#exampleModal").modal("hide");
