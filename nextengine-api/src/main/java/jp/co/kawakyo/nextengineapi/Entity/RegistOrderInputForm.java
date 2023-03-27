@@ -60,6 +60,9 @@ public class RegistOrderInputForm {
     /** 商品計 */
     String itemAllPrice;
 
+    /** 商品計（税込） */
+    String itemAllPrice_taxInclude;
+
     /** 税金 */
     String taxPrice;
 
@@ -86,6 +89,9 @@ public class RegistOrderInputForm {
 
     /** 日付指定 */
     String deliveryDate;
+
+    /** 出荷予定日 */
+    String shippingSchedule;
 
     /** 作業者欄 */
     String workerArea;

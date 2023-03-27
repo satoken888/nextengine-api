@@ -83,6 +83,7 @@
                     class="form-control"
                     placeholder="000-0000-0000"
                     name="buyerTel"
+                    th:field="*{buyerTel}"
                   />
                 </div>
                 <div class="form-group col-md-4">
@@ -94,6 +95,7 @@
                       class="form-control"
                       placeholder="0000000"
                       name="buyerZipcode"
+                      th:field="*{buyerZipcode}"
                     />
                     <div class="input-group-append">
                       <button
@@ -116,6 +118,7 @@
                     class="form-control"
                     placeholder="住所１"
                     name="buyerAddress1"
+                    th:field="*{buyerAddress1}"
                   />
                 </div>
                 <div class="form-group col-6">
@@ -126,6 +129,7 @@
                     class="form-control"
                     placeholder="住所２"
                     name="buyerAddress2"
+                    th:field="*{buyerAddress2}"
                   />
                 </div>
               </div>
@@ -138,6 +142,7 @@
                     class="form-control"
                     placeholder="注文者名"
                     name="buyerName"
+                    th:field="*{buyerName}"
                   />
                 </div>
                 <div class="form-group col-6">
@@ -148,6 +153,7 @@
                     class="form-control"
                     placeholder="チュウモンシャメイ"
                     name="buyerKana"
+                    th:field="*{buyerKana}"
                   />
                 </div>
               </div>
@@ -181,6 +187,7 @@
                     class="form-control"
                     placeholder="000-0000-0000"
                     name="destTel"
+                    th:field="*{destTel}"
                   />
                 </div>
                 <div class="form-group col-md-4">
@@ -192,6 +199,7 @@
                       class="form-control"
                       placeholder="0000000"
                       name="destZipCode"
+                      th:field="*{destZipCode}"
                     />
                     <div class="input-group-append">
                       <button
@@ -214,6 +222,7 @@
                     class="form-control"
                     placeholder="住所１"
                     name="destAddress1"
+                    th:field="*{destAddress1}"
                   />
                 </div>
                 <div class="form-group col-6">
@@ -224,6 +233,7 @@
                     class="form-control"
                     placeholder="住所２"
                     name="destAddress2"
+                    th:field="*{destAddress2}"
                   />
                 </div>
               </div>
@@ -236,6 +246,7 @@
                     class="form-control"
                     placeholder="届け先名"
                     name="destName"
+                    th:field="*{destName}"
                   />
                 </div>
                 <div class="form-group col-6">
@@ -246,6 +257,7 @@
                     class="form-control"
                     placeholder="トドケサキメイ"
                     name="destKana"
+                    th:field="*{destKana}"
                   />
                 </div>
               </div>
@@ -266,11 +278,12 @@
                     <tr>
                       <th style="width: 5%"></th>
                       <th style="width: 10%">商品コード</th>
-                      <th style="width: 40%">商品名</th>
+                      <th style="width: 30%">商品名</th>
                       <th style="width: 15%">商品オプション</th>
                       <th style="width: 10%">商品価格</th>
                       <th style="width: 10%">商品数量</th>
                       <th style="width: 10%">消費税率</th>
+                      <th style="width: 10%">小計</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -320,6 +333,13 @@
                           class="form-control calcItems"
                         />
                       </td>
+                      <td>
+                        <input
+                          name="subTotal"
+                          type="text"
+                          class="form-control subTotal"
+                        />
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -341,7 +361,14 @@
                   class="btn btn-primary"
                   id="test_tel_send"
                 >
-                  テスト送信
+                  受注確定
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="clear_button"
+                >
+                  クリア
                 </button>
               </div>
               <div class="form-row">
@@ -352,6 +379,7 @@
                     id="input_order_date"
                     class="form-control datepicker"
                     name="orderDate"
+                    th:field="*{orderDate}"
                   />
                 </div>
                 <div class="form-group col-md-６">
@@ -360,6 +388,8 @@
                     type="text"
                     id="input_shipping_date"
                     class="form-control datepicker"
+                    name="shippingSchedule"
+                    th:field="*{shippingSchedule}"
                   />
                 </div>
               </div>
@@ -371,6 +401,7 @@
                     id="input_preferred_date"
                     class="form-control datepicker"
                     name="deliveryDate"
+                    th:field="*{deliveryDate}"
                   />
                 </div>
                 <div class="form-group col-md-6">
@@ -379,6 +410,7 @@
                     id="input_preferred_time"
                     class="form-control"
                     name="shippingTimeZone"
+                    th:field="*{shippingTimeZone}"
                   >
                     <option value="指定なし">指定なし</option>
                     <option value="午前中">午前中</option>
@@ -397,10 +429,18 @@
                     class="form-control"
                     name="paymentMethod"
                   >
-                    <option>請求書後払い</option>
-                    <option>代引</option>
-                    <option>銀行振込前払い</option>
-                    <option>現金</option>
+                    <option th:selected="*{paymentMethod} == '請求書後払い'">
+                      請求書後払い
+                    </option>
+                    <option th:selected="*{paymentMethod} == '代引'">
+                      代引
+                    </option>
+                    <option th:selected="*{paymentMethod} == '銀行振込前払い'">
+                      銀行振込前払い
+                    </option>
+                    <option th:selected="*{paymentMethod} == '現金'">
+                      現金
+                    </option>
                   </select>
                 </div>
                 <div class="form-group col-md-6">
@@ -423,9 +463,15 @@
                 <div class="form-group col-md-6">
                   <label for="input_cool"> クール区分： </label>
                   <select id="input_cool" class="form-control" name="coolDiv">
-                    <option value="0" selected>常温</option>
-                    <option value="1">冷蔵</option>
-                    <option value="2">冷凍</option>
+                    <option value="0" th:selected="*{coolDiv} == 0">
+                      常温
+                    </option>
+                    <option value="1" th:selected="*{coolDiv} == 1">
+                      冷蔵
+                    </option>
+                    <option value="2" th:selected="*{coolDiv} == 2">
+                      冷凍
+                    </option>
                   </select>
                 </div>
                 <div class="form-group col-md-6">
@@ -453,6 +499,7 @@
                       <td>
                         <input
                           name="itemAllPrice_taxInclude"
+                          th:field="*{itemAllPrice_taxInclude}"
                           class="form-control"
                           value="0"
                           readonly
@@ -461,6 +508,7 @@
                       <td>
                         <input
                           name="shippingPrice"
+                          th:field="*{shippingPrice}"
                           class="form-control calcBilling"
                           value="0"
                         />
@@ -481,6 +529,7 @@
                       <td>
                         <input
                           name="commisionPrice"
+                          th:field="*{commisionPrice}"
                           class="form-control calcBilling"
                           value="0"
                         />
@@ -488,6 +537,7 @@
                       <td>
                         <input
                           name="usePoint"
+                          th:field="*{usePoint}"
                           class="form-control calcBilling"
                           value="0"
                         />
@@ -495,6 +545,7 @@
                       <td>
                         <input
                           name="otherPrice"
+                          th:field="*{otherPrice}"
                           class="form-control calcBilling"
                           value="0"
                         />
@@ -511,6 +562,7 @@
                   class="form-control"
                   value="0"
                   name="billingPrice"
+                  th:field="*{billingPrice}"
                   style="height: 80px; font-size: 50px; color: red"
                   readonly
                 />
@@ -525,6 +577,7 @@
                     id="input_remarks"
                     class="form-control"
                     name="remarks"
+                    th:field="*{remarks}"
                   ></textarea>
                 </div>
                 <div class="form-group col-md-6">
@@ -535,6 +588,7 @@
                     id="invoice_write"
                     class="form-control"
                     name="invoiceWrite"
+                    th:field="*{invoiceWrite}"
                   ></textarea>
                 </div>
                 <div class="form-group col-md-6">
@@ -545,6 +599,7 @@
                     id="input_for_worker"
                     class="form-control"
                     name="workerArea"
+                    th:field="*{workerArea}"
                   ></textarea>
                 </div>
               </div>
@@ -554,6 +609,7 @@
                   id="input_gift_flag"
                   class="form-check-input"
                   name="giftFlag"
+                  th:checked="*{giftFlag}"
                 />
                 <label for="input_gift_flag">ギフト用</label>
               </div>

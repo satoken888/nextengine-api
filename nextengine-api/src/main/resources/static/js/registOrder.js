@@ -51,10 +51,11 @@ $("#item_input_table").on("click", ".addButton", function () {
   if ($(this).hasClass("clicked")) {
     //列削除
     $(this).parent().parent().remove();
+    calcItemPriceAndTax();
   } else {
     //行追加
     var appendRowStr =
-      "<tr><td><div class='addButton'></div></td><td><input name='itemCode' type='text' class='form-control' /></td><td><input name='itemName' type='text' class='form-control' /></td><td><input name='itemOption' type='text' class='form-control' /></td><td><input name='itemPrice' type='text' class='form-control calcItems' /></td><td><input name='itemCount' type='number' class='form-control calcItems' /></td><td><input name='itemTaxRate' type='text' class='form-control calcItems' /></td></tr>";
+      "<tr><td><div class='addButton'></div></td><td><input name='itemCode' type='text' class='form-control' /></td><td><input name='itemName' type='text' class='form-control' /></td><td><input name='itemOption' type='text' class='form-control' /></td><td><input name='itemPrice' type='text' class='form-control calcItems' /></td><td><input name='itemCount' type='number' class='form-control calcItems' /></td><td><input name='itemTaxRate' type='text' class='form-control calcItems' /></td><td><input name='subTotal' type='text' class='form-control subTotal'/></td></tr>";
     $("#item_input_table tbody").append(appendRowStr);
     $(this).toggleClass("clicked");
   }
@@ -213,6 +214,10 @@ $("#test_tel_send").on("click", function () {
   $("#registOrderForm").submit();
 });
 
+$("#clear_button").on("click", function () {
+  location.reload();
+});
+
 var itemInfoList;
 function callSearchGoodsApi(itemCode, targetTrElem) {
   $.ajax({
@@ -322,11 +327,19 @@ $("#item_input_table tbody").on(
     if (e.keyCode == 13) {
       var itemCode = $(this).val();
       var trElem = $(this).parent().parent();
+
+      //商品検索API呼び出し
       callSearchGoodsApi(itemCode, trElem);
+
+      //クリックした行の追加ボタンが緑＋マークの状態の場合
       if (!trElem.find(".addButton").hasClass("clicked")) {
+        //クリックし、次の行を作っておく
         trElem.find(".addButton").click();
       }
       calcItemPriceAndTax();
+
+      //商品数量にカーソルを移動する
+      trElem.find("input[name='itemCount']").focus();
     }
   }
 );
@@ -455,6 +468,11 @@ function calcItemPriceAndTax() {
   itemTrElem.each(function (index) {
     var itemPrice = Number($(this).find("input[name='itemPrice']").val());
     var itemCount = Number($(this).find("input[name='itemCount']").val());
+    //小計を表示
+    $(this)
+      .find("input[name='subTotal']")
+      .val(itemPrice * itemCount);
+    //小計金額を合計に加算
     itemAllPrice += itemPrice * itemCount;
     taxPrice += Math.round(
       (itemPrice *
@@ -473,6 +491,17 @@ function calcItemPriceAndTax() {
   }
   calcBillingPrice();
 }
+
+$("#input_postage").on("change", function () {
+  if ($(this).val() == 1) {
+    //送料有りに変更された場合
+    calcShippingCost();
+  } else {
+    //送料無しに変更された場合
+    $("input[name='shippingPrice']").val(0);
+    calcBillingPrice();
+  }
+});
 
 $(".calcBilling").on("change", function () {
   calcBillingPrice();

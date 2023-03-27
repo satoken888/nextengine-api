@@ -32,6 +32,7 @@ public class ReceiveOrderController extends BaseController {
 
 	@RequestMapping(value = "/registOrder", method = RequestMethod.GET)
 	private String showRegistOrderView(HttpServletRequest _request, HttpServletResponse _response, Model model) {
+		model.addAttribute("registOrderInputForm", new RegistOrderInputForm());
 		return "registOrder";
 	}
 
@@ -52,6 +53,7 @@ public class ReceiveOrderController extends BaseController {
 		String resultMessage = String.valueOf(apiResponse.get("result"));
 		if (StringUtils.equals(resultMessage, "success")) {
 			model.addAttribute("confirmMessage", "登録成功しました。");
+			model.addAttribute("registOrderInputForm", reloadBuyerInfoOnly(registOrderInputForm));
 		} else {
 			model.addAttribute("alertMessage", "登録失敗しました。再度入力してください。");
 			model.addAttribute("registOrderInputForm", registOrderInputForm);
@@ -60,13 +62,35 @@ public class ReceiveOrderController extends BaseController {
 		return "registOrder";
 	}
 
+	/**
+	 * 登録完了時のinputFormの初期化処理
+	 * 購入者情報のみ残すようにする
+	 * 
+	 * @param registOrderInputForm
+	 * @return
+	 */
+	private RegistOrderInputForm reloadBuyerInfoOnly(RegistOrderInputForm registOrderInputForm) {
+		RegistOrderInputForm rtnForm = new RegistOrderInputForm();
+
+		rtnForm.setBuyerTel(registOrderInputForm.getBuyerTel());
+		rtnForm.setBuyerZipcode(registOrderInputForm.getBuyerZipcode());
+		rtnForm.setBuyerAddress1(registOrderInputForm.getBuyerAddress1());
+		rtnForm.setBuyerAddress2(registOrderInputForm.getBuyerAddress2());
+		rtnForm.setBuyerName(registOrderInputForm.getBuyerName());
+		rtnForm.setBuyerKana(registOrderInputForm.getBuyerKana());
+
+		return rtnForm;
+	}
+
 	private HashMap<String, String> createOrderUploadApiParam(RegistOrderInputForm inputForm) {
 		HashMap<String, String> result = new HashMap<String, String>();
 
 		// 備考欄の文字列を作成する
 		inputForm.setRemarks(modifyRemarks(inputForm));
 
+		// TEST用：７番
 		// result.put("receive_order_upload_pattern_id", "7");
+		// 本番用：８番
 		result.put("receive_order_upload_pattern_id", "8");
 		result.put("data_type_1", "csv");
 		result.put("data_1", createUploadCsvStr(inputForm));
@@ -97,6 +121,9 @@ public class ReceiveOrderController extends BaseController {
 			rtn += "【温度帯：冷蔵】";
 		} else if (StringUtils.equals(inputForm.getCoolDiv(), "2")) {
 			rtn += "【温度帯：冷凍】";
+		}
+		if (StringUtils.isNotBlank(inputForm.getShippingSchedule())) {
+			rtn += "【出荷予定日：" + inputForm.getShippingSchedule() + "】";
 		}
 
 		return rtn;
@@ -208,6 +235,7 @@ public class ReceiveOrderController extends BaseController {
 		HashMap<String, String> apiParams = new HashMap<String, String>();
 
 		apiParams.put("goods_id-like", itemCode + "%");
+		apiParams.put("goods_merchandise_id-eq", "0");
 		apiParams.put("fields", "goods_id,goods_name,goods_selling_price,goods_tax_rate");
 
 		return apiParams;
