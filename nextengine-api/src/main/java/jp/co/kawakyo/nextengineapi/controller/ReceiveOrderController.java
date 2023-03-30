@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -24,15 +25,25 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import jp.co.kawakyo.nextengineapi.Entity.CustomerInfoForReceiveOrderForm;
 import jp.co.kawakyo.nextengineapi.Entity.ItemInfo;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
+import jp.co.kawakyo.nextengineapi.utils.KintoneConnect;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
 import jp.co.kawakyo.nextengineapi.Entity.RegistOrderInputForm;
+import com.kintone.client.model.record.Record;
 
 @Controller
 public class ReceiveOrderController extends BaseController {
 
+	@Autowired
+	KintoneConnect kintoneClient;
+
 	@RequestMapping(value = "/registOrder", method = RequestMethod.GET)
 	private String showRegistOrderView(HttpServletRequest _request, HttpServletResponse _response, Model model) {
 		model.addAttribute("registOrderInputForm", new RegistOrderInputForm());
+
+		// List<Record> customerInfoList = kintoneClient.getCustomerInfo("0225234354");
+		// String name =
+		// customerInfoList.stream().findFirst().get().getSingleLineTextFieldValue("name");
+		// model.addAttribute("confirmMessage", name);
 		return "registOrder";
 	}
 
@@ -47,6 +58,9 @@ public class ReceiveOrderController extends BaseController {
 		// API送信（受注情報アップロード）
 		HashMap<String, Object> apiResponse = neApiExecute(getCurrentToken(_request),
 				NeApiURL.RECEIVEORDER_BASE_UPLOAD_PATH, apiParam);
+
+		// kintoneの顧客情報に追加もしくは更新をかける。
+		createOrUpdateCustomerInfo(registOrderInputForm);
 
 		// 成功であれば、成功のメッセージを出力する
 		// 失敗であれば失敗のメッセージとデータをそのまま返す
@@ -63,6 +77,52 @@ public class ReceiveOrderController extends BaseController {
 	}
 
 	/**
+	 * kintoneへの顧客情報追加・更新処理
+	 * 
+	 * @param registOrderInputForm
+	 */
+	private void createOrUpdateCustomerInfo(RegistOrderInputForm registOrderInputForm) {
+		if (StringUtils.isEmpty(registOrderInputForm.getBuyerKintoneId())) {
+			// 購入者がkintoneからの取得情報がない場合、新規登録する。
+			kintoneClient.registCustomerInfo(registOrderInputForm.getBuyerName(), registOrderInputForm.getBuyerKana(),
+					registOrderInputForm.getBuyerTel(), registOrderInputForm.getBuyerZipcode(),
+					registOrderInputForm.getBuyerAddress1(), registOrderInputForm.getBuyerAddress2(),
+					registOrderInputForm.getMemo(),
+					String.valueOf(Math.round(Long.valueOf(registOrderInputForm.getItemAllPrice()) * 0.01)));
+		} else {
+			// kintoneからの取得情報がある場合かつ、変更があった場合は更新する
+			if (StringUtils.equals(registOrderInputForm.getBuyerInfoChangeFlag(), "1")) {
+				// 更新処理
+				kintoneClient.updateCustomerInfo(registOrderInputForm.getBuyerKintoneId(),
+						registOrderInputForm.getBuyerName(), registOrderInputForm.getBuyerKana(),
+						registOrderInputForm.getBuyerTel(), registOrderInputForm.getBuyerZipcode(),
+						registOrderInputForm.getBuyerAddress1(), registOrderInputForm.getBuyerAddress2(),
+						registOrderInputForm.getMemo(),
+						String.valueOf(Long.valueOf(registOrderInputForm.getUsablePoint())
+								+ Math.round(Long.valueOf(registOrderInputForm.getItemAllPrice()) * 0.01)));
+			}
+		}
+
+		if (StringUtils.isEmpty(registOrderInputForm.getDestinationKintoneId())
+				&& !StringUtils.equals(registOrderInputForm.getBuyerTel(), registOrderInputForm.getDestTel())) {
+			// 送り先情報がkintoneからの取得情報がなく、購入者と送り先が異なる場合、新規登録する
+			kintoneClient.registCustomerInfo(registOrderInputForm.getDestName(), registOrderInputForm.getDestKana(),
+					registOrderInputForm.getDestTel(), registOrderInputForm.getDestZipCode(),
+					registOrderInputForm.getDestAddress1(), registOrderInputForm.getDestAddress2(), "",
+					"0");
+		} else {
+			// kintoneからの取得情報がある場合、かつ、へんこうがあった場合は更新する
+			if (StringUtils.equals(registOrderInputForm.getDestinationInfoChangeFlag(), "1")) {
+				kintoneClient.updateCustomerInfo(registOrderInputForm.getDestinationKintoneId(),
+						registOrderInputForm.getDestName(),
+						registOrderInputForm.getDestKana(),
+						registOrderInputForm.getDestTel(), registOrderInputForm.getDestZipCode(),
+						registOrderInputForm.getDestAddress1(), registOrderInputForm.getDestAddress2(), null, null);
+			}
+		}
+	}
+
+	/**
 	 * 登録完了時のinputFormの初期化処理
 	 * 購入者情報のみ残すようにする
 	 * 
@@ -71,13 +131,20 @@ public class ReceiveOrderController extends BaseController {
 	 */
 	private RegistOrderInputForm reloadBuyerInfoOnly(RegistOrderInputForm registOrderInputForm) {
 		RegistOrderInputForm rtnForm = new RegistOrderInputForm();
+		if (StringUtils.isEmpty(registOrderInputForm.getUsablePoint())) {
+			registOrderInputForm.setUsablePoint("0");
+		}
 
+		rtnForm.setBuyerKintoneId(registOrderInputForm.getBuyerKintoneId());
 		rtnForm.setBuyerTel(registOrderInputForm.getBuyerTel());
 		rtnForm.setBuyerZipcode(registOrderInputForm.getBuyerZipcode());
 		rtnForm.setBuyerAddress1(registOrderInputForm.getBuyerAddress1());
 		rtnForm.setBuyerAddress2(registOrderInputForm.getBuyerAddress2());
 		rtnForm.setBuyerName(registOrderInputForm.getBuyerName());
 		rtnForm.setBuyerKana(registOrderInputForm.getBuyerKana());
+		rtnForm.setMemo(registOrderInputForm.getMemo());
+		rtnForm.setUsablePoint(String.valueOf(Long.valueOf(registOrderInputForm.getUsablePoint())
+				+ Math.round(Long.valueOf(registOrderInputForm.getItemAllPrice()) * 0.01)));
 
 		return rtnForm;
 	}
@@ -192,13 +259,58 @@ public class ReceiveOrderController extends BaseController {
 			@RequestParam String tel, @RequestParam("div") Long div) {
 		List<CustomerInfoForReceiveOrderForm> result = new ArrayList<CustomerInfoForReceiveOrderForm>();
 
-		HashMap<String, String> apiParam = createApiParam(tel, div);
-		HashMap<String, Object> apiResponse = neApiExecute(getCurrentToken(_request),
-				NeApiURL.RECEIVEORDER_BASE_SEARCH_PATH, apiParam);
+		// kintoneより顧客情報取得
+		List<Record> customerInfoList = kintoneClient.getCustomerInfo(tel);
 
-		result = createCustomerInfoFromOrderInfo(apiResponse, div);
+		// 画面表示用にオブジェクトを変換する
+		result = modifyCustomerInfoList(customerInfoList);
+		// for (Record record : customerInfoList) {
+		// CustomerInfoForReceiveOrderForm rtnInfo = new
+		// CustomerInfoForReceiveOrderForm();
+		// rtnInfo.setName(record.getSingleLineTextFieldValue("name"));
+		// rtnInfo.setKana(record.getSingleLineTextFieldValue("kana"));
+		// rtnInfo.setAddress1(record.getSingleLineTextFieldValue("address1"));
+		// rtnInfo.setAddress2(record.getSingleLineTextFieldValue("address2"));
+		// rtnInfo.setTel(record.getSingleLineTextFieldValue("tel"));
+		// rtnInfo.setFax(record.getSingleLineTextFieldValue("fax"));
+		// rtnInfo.setZip_code(record.getSingleLineTextFieldValue("zipcode"));
+		// rtnInfo.setMail_address("kintone@ramenkan.com");
+		// rtnInfo.setMemo(record.getMultiLineTextFieldValue("memo"));
+		// rtnInfo.setUsablePoint(String.valueOf(record.getNumberFieldValue("point")));
+		// result.add(rtnInfo);
+		// }
+
+		if (result.size() == 0) {
+			// NEの受注履歴より顧客情報取得
+			HashMap<String, String> apiParam = createApiParam(tel, div);
+			HashMap<String, Object> apiResponse = neApiExecute(getCurrentToken(_request),
+					NeApiURL.RECEIVEORDER_BASE_SEARCH_PATH, apiParam);
+
+			result = createCustomerInfoFromOrderInfo(apiResponse, div);
+		}
 
 		return result;
+	}
+
+	private List<CustomerInfoForReceiveOrderForm> modifyCustomerInfoList(List<Record> customerInfoList) {
+		List<CustomerInfoForReceiveOrderForm> rtn = new ArrayList<CustomerInfoForReceiveOrderForm>();
+
+		for (Record record : customerInfoList) {
+			CustomerInfoForReceiveOrderForm rtnInfo = new CustomerInfoForReceiveOrderForm();
+			rtnInfo.setId(String.valueOf(record.getId()));
+			rtnInfo.setName(record.getSingleLineTextFieldValue("name"));
+			rtnInfo.setKana(record.getSingleLineTextFieldValue("kana"));
+			rtnInfo.setAddress1(record.getSingleLineTextFieldValue("address1"));
+			rtnInfo.setAddress2(record.getSingleLineTextFieldValue("address2"));
+			rtnInfo.setTel(record.getSingleLineTextFieldValue("tel"));
+			rtnInfo.setFax(record.getSingleLineTextFieldValue("fax"));
+			rtnInfo.setZip_code(record.getSingleLineTextFieldValue("zipcode"));
+			rtnInfo.setMail_address("kintone@ramenkan.com");
+			rtnInfo.setMemo(record.getMultiLineTextFieldValue("memo"));
+			rtnInfo.setUsablePoint(String.valueOf(record.getNumberFieldValue("point")));
+			rtn.add(rtnInfo);
+		}
+		return rtn;
 	}
 
 	/**
@@ -310,9 +422,7 @@ public class ReceiveOrderController extends BaseController {
 				resultSet.add(customer);
 			}
 		}
-
 		return new ArrayList<CustomerInfoForReceiveOrderForm>(resultSet);
-
 	}
 
 	@SuppressWarnings("unchecked")

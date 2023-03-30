@@ -61,6 +61,32 @@
           class="form-control calcBilling"
           value="0"
         />
+        <input
+          type="hidden"
+          id="buyerKintoneId"
+          name="buyerKintoneId"
+          class="form-control"
+          th:field="*{buyerKintoneId}"
+        />
+        <input
+          type="hidden"
+          id="destinationKintoneId"
+          name="destinationKintoneId"
+          class="form-control"
+          th:field="*{destinationKintoneId}"
+        />
+        <input
+          type="hidden"
+          id="buyerInfoChangeFlag"
+          name="buyerInfoChangeFlag"
+          value="0"
+        />
+        <input
+          type="hidden"
+          id="destinationInfoChangeFlag"
+          name="destinationInfoChangeFlag"
+          value="0"
+        />
 
         <div class="row">
           <div class="col-8">
@@ -74,13 +100,14 @@
               >
                 送り主情報
               </div>
+
               <div class="form-row">
                 <div class="form-group col-md-6">
                   <label for="input_buyer_tel"> 電話番号： </label>
                   <input
                     type="text"
                     id="input_buyer_tel"
-                    class="form-control"
+                    class="form-control buyerInputForm"
                     placeholder="000-0000-0000"
                     name="buyerTel"
                     th:field="*{buyerTel}"
@@ -92,7 +119,7 @@
                     <input
                       type="text"
                       id="input_buyer_zipcode"
-                      class="form-control"
+                      class="form-control buyerInputForm"
                       placeholder="0000000"
                       name="buyerZipcode"
                       th:field="*{buyerZipcode}"
@@ -115,7 +142,7 @@
                   <input
                     type="text"
                     id="input_buyer_address1"
-                    class="form-control"
+                    class="form-control buyerInputForm"
                     placeholder="住所１"
                     name="buyerAddress1"
                     th:field="*{buyerAddress1}"
@@ -126,7 +153,7 @@
                   <input
                     type="text"
                     id="input_buyer_address2"
-                    class="form-control"
+                    class="form-control buyerInputForm"
                     placeholder="住所２"
                     name="buyerAddress2"
                     th:field="*{buyerAddress2}"
@@ -139,7 +166,7 @@
                   <input
                     type="text"
                     id="input_buyer_name"
-                    class="form-control"
+                    class="form-control buyerInputForm"
                     placeholder="注文者名"
                     name="buyerName"
                     th:field="*{buyerName}"
@@ -150,10 +177,33 @@
                   <input
                     type="text"
                     id="input_buyer_furi"
-                    class="form-control"
+                    class="form-control buyerInputForm"
                     placeholder="チュウモンシャメイ"
                     name="buyerKana"
                     th:field="*{buyerKana}"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-10">
+                  <label for="memo">メモ欄：</label>
+                  <textarea
+                    class="form-control buyerInputForm"
+                    id="memo"
+                    name="memo"
+                    rows="3"
+                    th:field="*{memo}"
+                  ></textarea>
+                </div>
+                <div class="form-group col-2">
+                  <label for="usablePoint">保持ポイント：</label>
+                  <input
+                    type="text"
+                    id="usablePoint"
+                    class="form-control buyerInputForm"
+                    name="usablePoint"
+                    th:field="*{usablePoint}"
+                    readonly
                   />
                 </div>
               </div>
@@ -346,273 +396,251 @@
               </div>
             </div>
           </div>
-          <div class="col-4" style="border-left: 1px solid #d3d3d3">
-            <div
-              id="information_area"
-              class="d-block"
-              style="position: sticky; top: 72px"
-            >
-              <div
-                class="btn-group btn-group-toggle mb-4"
-                data-toggle="buttons"
-              >
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="test_tel_send"
+        <div class="col-4" style="border-left: 1px solid #d3d3d3">
+          <div
+            id="information_area"
+            class="d-block"
+            style="position: sticky; top: 72px"
+          >
+            <div class="btn-group btn-group-toggle mb-4" data-toggle="buttons">
+              <button type="button" class="btn btn-primary" id="test_tel_send">
+                受注確定
+              </button>
+              <button type="button" class="btn btn-secondary" id="clear_button">
+                クリア
+              </button>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-６">
+                <label for="input_order_date"> 受注日： </label>
+                <input
+                  type="text"
+                  id="input_order_date"
+                  class="form-control datepicker"
+                  name="orderDate"
+                  th:field="*{orderDate}"
+                />
+              </div>
+              <div class="form-group col-md-６">
+                <label for="input_shipping_date"> 出荷予定日： </label>
+                <input
+                  type="text"
+                  id="input_shipping_date"
+                  class="form-control datepicker"
+                  name="shippingSchedule"
+                  th:field="*{shippingSchedule}"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="input_preferred_date"> 配達希望日： </label>
+                <input
+                  type="text"
+                  id="input_preferred_date"
+                  class="form-control datepicker"
+                  name="deliveryDate"
+                  th:field="*{deliveryDate}"
+                />
+              </div>
+              <div class="form-group col-md-6">
+                <label for="input_preferred_time"> 届け時間帯： </label>
+                <select
+                  id="input_preferred_time"
+                  class="form-control"
+                  name="shippingTimeZone"
+                  th:field="*{shippingTimeZone}"
                 >
-                  受注確定
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  id="clear_button"
+                  <option value="指定なし">指定なし</option>
+                  <option value="午前中">午前中</option>
+                  <option value="14時-16時">１４時〜１６時</option>
+                  <option value="16時-18時">１６時〜１８時</option>
+                  <option value="18時-20時">１８時〜２０時</option>
+                  <option value="19時-21時">１９時〜２１時</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="input_payment"> 支払方法： </label>
+                <select
+                  id="input_payment"
+                  class="form-control"
+                  name="paymentMethod"
                 >
-                  クリア
-                </button>
+                  <option th:selected="*{paymentMethod} == '請求書後払い'">
+                    請求書後払い
+                  </option>
+                  <option th:selected="*{paymentMethod} == '代引'">代引</option>
+                  <option th:selected="*{paymentMethod} == '銀行振込前払い'">
+                    銀行振込前払い
+                  </option>
+                  <option th:selected="*{paymentMethod} == '現金'">現金</option>
+                </select>
               </div>
-              <div class="form-row">
-                <div class="form-group col-md-６">
-                  <label for="input_order_date"> 受注日： </label>
-                  <input
-                    type="text"
-                    id="input_order_date"
-                    class="form-control datepicker"
-                    name="orderDate"
-                    th:field="*{orderDate}"
-                  />
-                </div>
-                <div class="form-group col-md-６">
-                  <label for="input_shipping_date"> 出荷予定日： </label>
-                  <input
-                    type="text"
-                    id="input_shipping_date"
-                    class="form-control datepicker"
-                    name="shippingSchedule"
-                    th:field="*{shippingSchedule}"
-                  />
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="input_preferred_date"> 配達希望日： </label>
-                  <input
-                    type="text"
-                    id="input_preferred_date"
-                    class="form-control datepicker"
-                    name="deliveryDate"
-                    th:field="*{deliveryDate}"
-                  />
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="input_preferred_time"> 届け時間帯： </label>
-                  <select
-                    id="input_preferred_time"
-                    class="form-control"
-                    name="shippingTimeZone"
-                    th:field="*{shippingTimeZone}"
-                  >
-                    <option value="指定なし">指定なし</option>
-                    <option value="午前中">午前中</option>
-                    <option value="14時-16時">１４時〜１６時</option>
-                    <option value="16時-18時">１６時〜１８時</option>
-                    <option value="18時-20時">１８時〜２０時</option>
-                    <option value="19時-21時">１９時〜２１時</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="input_payment"> 支払方法： </label>
-                  <select
-                    id="input_payment"
-                    class="form-control"
-                    name="paymentMethod"
-                  >
-                    <option th:selected="*{paymentMethod} == '請求書後払い'">
-                      請求書後払い
-                    </option>
-                    <option th:selected="*{paymentMethod} == '代引'">
-                      代引
-                    </option>
-                    <option th:selected="*{paymentMethod} == '銀行振込前払い'">
-                      銀行振込前払い
-                    </option>
-                    <option th:selected="*{paymentMethod} == '現金'">
-                      現金
-                    </option>
-                  </select>
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="input_invoice_type"> 送り状種別： </label>
-                  <select
-                    id="input_invoice_type"
-                    class="form-control"
-                    name="shippingMethod"
-                  >
-                    <option value="ヤマト運輸" selected>ヤマトB2V6</option>
-                    <!-- 
+              <div class="form-group col-md-6">
+                <label for="input_invoice_type"> 送り状種別： </label>
+                <select
+                  id="input_invoice_type"
+                  class="form-control"
+                  name="shippingMethod"
+                >
+                  <option value="ヤマト運輸" selected>ヤマトB2V6</option>
+                  <!-- 
                     <option value="ゆうぱっく">ゆうぱっく</option>
                     < option value="佐川急便">佐川急便</option>
                     <option value="伝票不要">伝票不要</option>
                     -->
-                  </select>
-                </div>
+                </select>
               </div>
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="input_cool"> クール区分： </label>
-                  <select id="input_cool" class="form-control" name="coolDiv">
-                    <option value="0" th:selected="*{coolDiv} == 0">
-                      常温
-                    </option>
-                    <option value="1" th:selected="*{coolDiv} == 1">
-                      冷蔵
-                    </option>
-                    <option value="2" th:selected="*{coolDiv} == 2">
-                      冷凍
-                    </option>
-                  </select>
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="input_postage"> 送料有無： </label>
-                  <select id="input_postage" class="form-control">
-                    <option value="1" selected>有</option>
-                    <option value="0">無</option>
-                  </select>
-                </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="input_cool"> クール区分： </label>
+                <select id="input_cool" class="form-control" name="coolDiv">
+                  <option value="0" th:selected="*{coolDiv} == 0">常温</option>
+                  <option value="1" th:selected="*{coolDiv} == 1">冷蔵</option>
+                  <option value="2" th:selected="*{coolDiv} == 2">冷凍</option>
+                </select>
               </div>
-              <div class="form-row">
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <!--
+              <div class="form-group col-md-6">
+                <label for="input_postage"> 送料有無： </label>
+                <select id="input_postage" class="form-control">
+                  <option value="1" selected>有</option>
+                  <option value="0">無</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <!--
                       <th>商品計</th>
                       <th>税金</th>
                     -->
-                      <th style="width: 67%">商品計（税込）</th>
-                      <th style="width: 33%">発送料</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input
-                          name="itemAllPrice_taxInclude"
-                          th:field="*{itemAllPrice_taxInclude}"
-                          class="form-control"
-                          value="0"
-                          readonly
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="shippingPrice"
-                          th:field="*{shippingPrice}"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>手数料</th>
-                      <th>ポイント</th>
-                      <th>その他費用</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input
-                          name="commisionPrice"
-                          th:field="*{commisionPrice}"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="usePoint"
-                          th:field="*{usePoint}"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          name="otherPrice"
-                          th:field="*{otherPrice}"
-                          class="form-control calcBilling"
-                          value="0"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="form-group">
-                <label for="input_total_claim"> 請求額： </label>
-                <input
-                  type="text"
-                  id="input_total_claim"
-                  class="form-control"
-                  value="0"
-                  name="billingPrice"
-                  th:field="*{billingPrice}"
-                  style="height: 80px; font-size: 50px; color: red"
-                  readonly
-                />
-              </div>
+                    <th style="width: 67%">商品計（税込）</th>
+                    <th style="width: 33%">発送料</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <input
+                        name="itemAllPrice_taxInclude"
+                        th:field="*{itemAllPrice_taxInclude}"
+                        class="form-control"
+                        value="0"
+                        readonly
+                      />
+                    </td>
+                    <td>
+                      <input
+                        name="shippingPrice"
+                        th:field="*{shippingPrice}"
+                        class="form-control calcBilling"
+                        value="0"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>手数料</th>
+                    <th>ポイント</th>
+                    <th>その他費用</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <input
+                        name="commisionPrice"
+                        th:field="*{commisionPrice}"
+                        class="form-control calcBilling"
+                        value="0"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        name="usePoint"
+                        th:field="*{usePoint}"
+                        class="form-control calcBilling"
+                        value="0"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        name="otherPrice"
+                        th:field="*{otherPrice}"
+                        class="form-control calcBilling"
+                        value="0"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="form-group">
+              <label for="input_total_claim"> 請求額： </label>
+              <input
+                type="text"
+                id="input_total_claim"
+                class="form-control"
+                value="0"
+                name="billingPrice"
+                th:field="*{billingPrice}"
+                style="height: 80px; font-size: 50px; color: red"
+                readonly
+              />
+            </div>
 
-              <div class="form-row">
-                <div class="form-group col-md-6 d-none">
-                  <label for="input_remarks">備考欄</label>
-                  <textarea
-                    type="text"
-                    rows="4"
-                    id="input_remarks"
-                    class="form-control"
-                    name="remarks"
-                    th:field="*{remarks}"
-                  ></textarea>
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="invoice_write">伝票記載事項</label>
-                  <textarea
-                    type="text"
-                    rows="4"
-                    id="invoice_write"
-                    class="form-control"
-                    name="invoiceWrite"
-                    th:field="*{invoiceWrite}"
-                  ></textarea>
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="input_for_worker">本受注についての留意事項</label>
-                  <textarea
-                    type="text"
-                    rows="4"
-                    id="input_for_worker"
-                    class="form-control"
-                    name="workerArea"
-                    th:field="*{workerArea}"
-                  ></textarea>
-                </div>
+            <div class="form-row">
+              <div class="form-group col-md-6 d-none">
+                <label for="input_remarks">備考欄</label>
+                <textarea
+                  type="text"
+                  rows="4"
+                  id="input_remarks"
+                  class="form-control"
+                  name="remarks"
+                  th:field="*{remarks}"
+                ></textarea>
               </div>
-              <div class="form-group form-check col-md-4">
-                <input
-                  type="checkbox"
-                  id="input_gift_flag"
-                  class="form-check-input"
-                  name="giftFlag"
-                  th:checked="*{giftFlag}"
-                />
-                <label for="input_gift_flag">ギフト用</label>
+              <div class="form-group col-md-6">
+                <label for="invoice_write">伝票記載事項</label>
+                <textarea
+                  type="text"
+                  rows="4"
+                  id="invoice_write"
+                  class="form-control"
+                  name="invoiceWrite"
+                  th:field="*{invoiceWrite}"
+                ></textarea>
               </div>
+              <div class="form-group col-md-6">
+                <label for="input_for_worker">本受注についての留意事項</label>
+                <textarea
+                  type="text"
+                  rows="4"
+                  id="input_for_worker"
+                  class="form-control"
+                  name="workerArea"
+                  th:field="*{workerArea}"
+                ></textarea>
+              </div>
+            </div>
+            <div class="form-group form-check col-md-4">
+              <input
+                type="checkbox"
+                id="input_gift_flag"
+                class="form-check-input"
+                name="giftFlag"
+                th:checked="*{giftFlag}"
+              />
+              <label for="input_gift_flag">ギフト用</label>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 //注文者と同じを押されたときの転記作業
 $("#same_delivery").on("click", function (event) {
+  $("#destinationKintoneId").val($("#buyerKintoneId").val());
   $("#input_destination_tel").val($("#input_buyer_tel").val());
   $("#input_destination_zipcode").val($("#input_buyer_zipcode").val());
   $("#input_destination_address1").val($("#input_buyer_address1").val());
@@ -207,9 +208,17 @@ function searchAddressFromZipcode(div) {
     });
 }
 
-//テスト送信ボタン処理
+//受注確定ボタン処理
 $("#test_tel_send").on("click", function () {
   // callSearchGoodsApi("0100");
+  if (buyerInfoChangeFlag) {
+    //購入者情報が書き換わってる場合
+    $("#buyerInfoChangeFlag").val("1");
+  }
+  if (destinationInfoChangeFlag) {
+    //送り先情報が書き換わってる場合
+    $("#destinationInfoChangeFlag").val("1");
+  }
   $("#input_remarks").val($("#invoice_write").val());
   $("#registOrderForm").submit();
 });
@@ -310,6 +319,7 @@ function callSearchGoodsApi(itemCode, targetTrElem) {
 $("#input_buyer_tel").on("keydown", function (e) {
   if (e.keyCode == 13) {
     searchCustomerByTel(0);
+    buyerInfoChangeFlag = false;
     return false;
   }
 });
@@ -317,6 +327,7 @@ $("#input_buyer_tel").on("keydown", function (e) {
 $("#input_destination_tel").on("keydown", function (e) {
   if (e.keyCode == 13) {
     searchCustomerByTel(1);
+    destinationInfoChangeFlag = false;
     return false;
   }
 });
@@ -430,12 +441,20 @@ function searchCustomerByTel(div) {
           $("#input_buyer_address2").val(customerInfo.address2);
           $("#input_buyer_name").val(customerInfo.name);
           $("#input_buyer_furi").val(customerInfo.kana);
+          $("#memo").val(customerInfo.memo);
+          $("#usablePoint").val(customerInfo.usablePoint);
+          //初期表示時のポイント数を確保しておく
+          //仕様ポイントを変更した場合に対応できるように
+          initialStatePoint = customerInfo.usablePoint;
+          buyerInfoChangeFlag = true;
+          $("#buyerKintoneId").val(customerInfo.id);
         } else if (div == 1) {
           $("#input_destination_zipcode").val(customerInfo.zip_code);
           $("#input_destination_address1").val(customerInfo.address1);
           $("#input_destination_address2").val(customerInfo.address2);
           $("#input_destination_name").val(customerInfo.name);
           $("#input_destination_furi").val(customerInfo.kana);
+          $("#destinationKintoneId").val(customerInfo.id);
 
           //送り先住所を入力した際は送料再計算処理を実施する
           calcShippingCost();
@@ -505,6 +524,10 @@ $("#input_postage").on("change", function () {
 
 $(".calcBilling").on("change", function () {
   calcBillingPrice();
+});
+var initialStatePoint;
+$("input[name='usePoint']").on("change", function () {
+  $("#usablePoint").val(initialStatePoint - $(this).val());
 });
 function calcBillingPrice() {
   var itemAllPrice = Number($("input[name='itemAllPrice']").val());
@@ -655,4 +678,15 @@ $("#input_cool").on("change", function () {
     $("input[name='shippingPrice']").val(cost);
     calcBillingPrice();
   }
+});
+
+var buyerInfoChangeFlag = false;
+var destinationInfoChangeFlag = false;
+//購入者情報に変更があったらフラグをたてる
+$(".buyerInputForm").on("change", function () {
+  buyerInfoChangeFlag = true;
+});
+//送り先情報に変更があったらフラグをたてる
+$(".destinationInputForm").on("change", function () {
+  destinationInfoChangeFlag = true;
 });

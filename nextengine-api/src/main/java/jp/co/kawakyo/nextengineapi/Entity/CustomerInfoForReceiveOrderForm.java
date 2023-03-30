@@ -4,6 +4,9 @@ import lombok.Data;
 
 @Data
 public class CustomerInfoForReceiveOrderForm {
+
+    // kintoneID
+    String id;
     // お客様名
     String name;
     // お客様名カナ
@@ -20,4 +23,8 @@ public class CustomerInfoForReceiveOrderForm {
     String fax;
     // メールアドレス
     String mail_address;
+    // メモ欄
+    String memo;
+    // 使用可能ポイント
+    String usablePoint;
 }

@@ -11,6 +11,9 @@ public class RegistOrderInputForm {
     /** 受注日 */
     String orderDate;
 
+    /** buyerのkintoneID */
+    String buyerKintoneId;
+
     /** 受注郵便番号 */
     String buyerZipcode;
 
@@ -26,12 +29,18 @@ public class RegistOrderInputForm {
     /** 受注名カナ */
     String buyerKana;
 
+    /** 顧客情報メモ */
+    String memo;
+
     /** 受注電話番号 */
     String buyerTel;
 
     /** 受注メールアドレス */
     // 画面上には入力項目なし
     String buyerMail;
+
+    /** 発送先のkintoneId */
+    String destinationKintoneId;
 
     /** 発送郵便番号 */
     String destZipCode;
@@ -71,6 +80,9 @@ public class RegistOrderInputForm {
 
     /** 手数料 */
     String commisionPrice;
+
+    /** 保持しているポイント */
+    String usablePoint;
 
     /** ポイント */
     String usePoint;
@@ -146,4 +158,10 @@ public class RegistOrderInputForm {
 
     /** 温度帯 */
     String coolDiv;
+
+    /** 購入者情報変更フラグ */
+    String buyerInfoChangeFlag;
+
+    /** 送り先情報変更フラグ */
+    String destinationInfoChangeFlag;
 }

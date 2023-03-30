@@ -64,6 +64,13 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.kintone/kintone-java-client -->
+		<dependency>
+			<groupId>com.kintone</groupId>
+			<artifactId>kintone-java-client</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+
 
 	</dependencies>
 	<build>
