@@ -56,7 +56,7 @@ $("#item_input_table").on("click", ".addButton", function () {
   } else {
     //行追加
     var appendRowStr =
-      "<tr><td><div class='addButton'></div></td><td><input name='itemCode' type='text' class='form-control' /></td><td><input name='itemName' type='text' class='form-control' /></td><td><input name='itemOption' type='text' class='form-control' /></td><td><input name='itemPrice' type='text' class='form-control calcItems' /></td><td><input name='itemCount' type='number' class='form-control calcItems' /></td><td><input name='itemTaxRate' type='text' class='form-control calcItems' /></td><td><input name='subTotal' type='text' class='form-control subTotal'/></td></tr>";
+      "<tr><td><div class='addButton'></div></td><td><input name='itemCode' type='text' class='form-control' /></td><td><input name='itemName' type='text' class='form-control' /></td><td><select name='itemOption' class='form-control'><option value=''></option><option value='包装のみ'>包装のみ</option><option value='無地のし'>無地のし</option><option value='お歳暮のし'>お歳暮のし</option><option value='お礼のし'>お礼のし</option><option value='のし（その他）'>のし（その他）</option><option value='ひとこと（感謝の気持ち）'>ひとこと（感謝の気持ち）</option><option value='ひとこと（ありがとう）'>ひとこと（ありがとう）</option></select></td><td><input name='itemPrice' type='text' class='form-control calcItems d-none' /><input name='itemPrice_taxInclude' type='text' class='form-control calcItems' /></td><td><input name='itemCount' type='number' class='form-control calcItems' /></td><td><input name='itemTaxRate' type='text' class='form-control calcItems' /></td><td><input name='subTotal' type='text' class='form-control subTotal d-none'/><input name='subTotal_taxInclude' type='text' class='form-control subTotal' /></td></tr>";
     $("#item_input_table tbody").append(appendRowStr);
     $(this).toggleClass("clicked");
   }
@@ -220,12 +220,39 @@ $("#test_tel_send").on("click", function () {
     $("#destinationInfoChangeFlag").val("1");
   }
   $("#input_remarks").val($("#invoice_write").val());
-  $("#registOrderForm").submit();
+
+  //送信前にバリデーション処理を実施する
+  var message = validParameters();
+
+  if (message == "") {
+    $("#registOrderForm").submit();
+  } else {
+    $("#validMessage").text(message);
+    $("#validMessageArea").addClass("show");
+    $("#validCloseButton").off("click");
+    $("#validCloseButton").on("click", function () {
+      $("#validMessageArea").removeClass("show");
+    });
+  }
 });
 
-$("#clear_button").on("click", function () {
-  location.reload();
-});
+/**
+ * 入力項目のバリデーションチェック
+ */
+function validParameters() {
+  var rtnMessage = "";
+  if (
+    $("#input_shipping_date").val() == null ||
+    $("#input_shipping_date").val() == ""
+  ) {
+    rtnMessage += "出荷予定日を入力してください。";
+  }
+  return rtnMessage;
+}
+
+// $("#clear_button").on("click", function () {
+//   location.href = "/nextengine-api/registOrder/";
+// });
 
 var itemInfoList;
 function callSearchGoodsApi(itemCode, targetTrElem) {
@@ -249,7 +276,15 @@ function callSearchGoodsApi(itemCode, targetTrElem) {
         .find("[name='itemPrice']")
         .val(Math.round(itemInfo.itemPrice));
       $(targetTrElem).find("[name='itemName']").val(itemInfo.itemName);
-      $(targetTrElem).find("[name='itemTaxRate']").val(itemInfo.itemTaxrate);
+      if (
+        itemInfo.itemTaxrate == null ||
+        itemInfo.itemTaxrate == "" ||
+        itemInfo.itemTaxrate == 0
+      ) {
+        $(targetTrElem).find("[name='itemTaxRate']").val(8);
+      } else {
+        $(targetTrElem).find("[name='itemTaxRate']").val(itemInfo.itemTaxrate);
+      }
       //再計算
       calcItemPriceAndTax();
     } else {
@@ -288,6 +323,7 @@ function callSearchGoodsApi(itemCode, targetTrElem) {
         $("#modal_iteminfo_OK_button").click();
       });
 
+      //商品選択modal内でのOKボタン押下時の処理を記述
       $("#modal_iteminfo_OK_button").off("click");
       $("#modal_iteminfo_OK_button").on("click", function (event) {
         var itemInfoListIndex = $(
@@ -299,7 +335,17 @@ function callSearchGoodsApi(itemCode, targetTrElem) {
           .find("[name='itemPrice']")
           .val(Math.round(itemInfo.itemPrice));
         $(targetTrElem).find("[name='itemName']").val(itemInfo.itemName);
-        $(targetTrElem).find("[name='itemTaxRate']").val(itemInfo.itemTaxrate);
+        if (
+          itemInfo.itemTaxrate == null ||
+          itemInfo.itemTaxrate == 0 ||
+          itemInfo.itemTaxrate == ""
+        ) {
+          $(targetTrElem).find("[name='itemTaxRate']").val(8);
+        } else {
+          $(targetTrElem)
+            .find("[name='itemTaxRate']")
+            .val(itemInfo.itemTaxrate);
+        }
 
         //パラメータを転記したあと、モーダルを閉じる
         $("#modal_iteminfo").modal("hide");
@@ -487,6 +533,20 @@ function calcItemPriceAndTax() {
   itemTrElem.each(function (index) {
     var itemPrice = Number($(this).find("input[name='itemPrice']").val());
     var itemCount = Number($(this).find("input[name='itemCount']").val());
+    var itemTaxRate = Number($(this).find("input[name='itemTaxRate']").val());
+
+    //税込商品金額を算出し、表示
+    var itemPrice_taxInclude = Math.round(
+      itemPrice * (1.0 + itemTaxRate / 100)
+    );
+    $(this)
+      .find("input[name='itemPrice_taxInclude']")
+      .val(itemPrice_taxInclude);
+
+    $(this)
+      .find("input[name='subTotal_taxInclude']")
+      .val(itemPrice_taxInclude * itemCount);
+
     //小計を表示
     $(this)
       .find("input[name='subTotal']")

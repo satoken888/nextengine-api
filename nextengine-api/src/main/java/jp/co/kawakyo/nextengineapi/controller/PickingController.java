@@ -115,55 +115,62 @@ public class PickingController extends BaseController {
 		if (uploadFile != null && uploadFile.getSize() > 0) {
 			logger.info("CSV処理します。");
 			pickingFileDiv = true;
-			//DMとECのピッキングリスト合算用に新たにリストを作成
-			ArrayList<PickingTableRecord> replacePickingTableList = new ArrayList<PickingTableRecord>(); 
+			// DMとECのピッキングリスト合算用に新たにリストを作成
+			ArrayList<PickingTableRecord> replacePickingTableList = new ArrayList<PickingTableRecord>();
 			try {
-				//CSVファイルデータをエンティティに変換
+				// CSVファイルデータをエンティティに変換
 				List<DmPickingDataCsvRecord> csvFileData = DmPickingDataUploadUtil
 						.getCSVDataFromDmPickingDataCsvRecord(uploadFile);
 				logger.debug(csvFileData.toString());
 
-				//ＤＭリストとＥＣリストをそれぞれ照らし合わせる
-				for(DmPickingDataCsvRecord dmRecord : csvFileData) {
+				// ＤＭリストとＥＣリストをそれぞれ照らし合わせる
+				for (DmPickingDataCsvRecord dmRecord : csvFileData) {
 					boolean itemExists = false;
-					for(PickingTableRecord ecDataRecord : res.getPickingTableRecordList()){
-						if(StringUtils.equals(ecDataRecord.getItemCode(),dmRecord.getItemCd())) {
-							//ＥＣとＤＭのリストの中に合致するものがあった場合フラグを立てる
+					for (PickingTableRecord ecDataRecord : res.getPickingTableRecordList()) {
+						if (StringUtils.equals(ecDataRecord.getItemCode(), dmRecord.getItemCd())) {
+							// ＥＣとＤＭのリストの中に合致するものがあった場合フラグを立てる
 							itemExists = true;
-							//ECとDMのリストを合算してリストに格納する
-							replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(),dmRecord.getItemName(),String.valueOf(dmRecord.getItemQuantity()+Long.valueOf(ecDataRecord.getEcTotal())),ecDataRecord.getEcTotal(),String.valueOf(dmRecord.getItemQuantity())));
+							// ECとDMのリストを合算してリストに格納する
+							replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(),
+									dmRecord.getItemName(),
+									String.valueOf(
+											dmRecord.getItemQuantity() + Long.valueOf(ecDataRecord.getEcTotal())),
+									ecDataRecord.getEcTotal(), String.valueOf(dmRecord.getItemQuantity())));
 							break;
 						}
 					}
 
-					if(!itemExists) {
-						//合致する商品が無かった場合
-						replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(),dmRecord.getItemName(),String.valueOf(dmRecord.getItemQuantity()),"0",String.valueOf(dmRecord.getItemQuantity())));
+					if (!itemExists) {
+						// 合致する商品が無かった場合
+						replacePickingTableList.add(new PickingTableRecord(dmRecord.getItemCd(), dmRecord.getItemName(),
+								String.valueOf(dmRecord.getItemQuantity()), "0",
+								String.valueOf(dmRecord.getItemQuantity())));
 					}
 				}
 
-				//ECのリスト分ループしてDMのリストにないが、ECのリストにはあるパターンの商品を詰める
+				// ECのリスト分ループしてDMのリストにないが、ECのリストにはあるパターンの商品を詰める
 				ArrayList<PickingTableRecord> ecOnlyList = new ArrayList<PickingTableRecord>();
-				for(PickingTableRecord ecRecord : res.getPickingTableRecordList()) {
+				for (PickingTableRecord ecRecord : res.getPickingTableRecordList()) {
 					boolean exists = false;
-					for(PickingTableRecord totalRecord : replacePickingTableList) {
+					for (PickingTableRecord totalRecord : replacePickingTableList) {
 						//
-						if(StringUtils.equals(totalRecord.getItemCode(),ecRecord.getItemCode())) {
+						if (StringUtils.equals(totalRecord.getItemCode(), ecRecord.getItemCode())) {
 							exists = true;
 							break;
 						}
 					}
 
-					if(!exists) {
+					if (!exists) {
 						ecRecord.setDmTotal("0");
 						ecOnlyList.add(ecRecord);
 					}
 				}
 
-				//リプレース用のリストにECのみの商品を追加
+				// リプレース用のリストにECのみの商品を追加
 				replacePickingTableList.addAll(ecOnlyList);
-				//商品コード順に並び替えて、レスポンスのリストを上書きする
-				res.setPickingTableRecordList(replacePickingTableList.stream().sorted((e1, e2) -> e1.getItemCode().compareTo(e2.getItemCode())).collect(Collectors.toList()));
+				// 商品コード順に並び替えて、レスポンスのリストを上書きする
+				res.setPickingTableRecordList(replacePickingTableList.stream()
+						.sorted((e1, e2) -> e1.getItemCode().compareTo(e2.getItemCode())).collect(Collectors.toList()));
 
 			} catch (UnsupportedEncodingException e) {
 				logger.error("エンコードエラー");
@@ -412,6 +419,7 @@ public class PickingController extends BaseController {
 			// 商品コードから指定の文字列を削除する。
 			// 今後も削除処理はここに追加する。
 			itemCode = itemCode.replace("-oka", "");
+			itemCode = itemCode.replace("0200-come-", "");
 
 			// 商品名取得(オプションもnullでなければ追記する)
 			// 本館の区分の場合、商品オプションをつけないようにする。

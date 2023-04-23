@@ -8,6 +8,12 @@ public class RegistOrderInputForm {
     /** 店舗伝票番号 */
     String shopOrderNumber;
 
+    /** 受付担当者 */
+    String receptionist;
+
+    /** 受注区分 */
+    String orderClass;
+
     /** 受注日 */
     String orderDate;
 

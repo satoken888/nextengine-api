@@ -9,8 +9,48 @@
     <div th:replace="common :: header"></div>
 
     <div class="container-fluid">
-      <h1>受注登録画面</h1>
+      <form
+        id="registOrderForm"
+        th:action="@{/registOrder}"
+        action="/registOrder"
+        th:object="${registOrderInputForm}"
+        method="post"
+      >
+      <div class="row">
+        <h1 class="col-3">受注登録画面</h1>
+        <div class="col-2 form-inline">
+            <label for="receptionist">担当者：</label>
+            <select class="form-control" name="receptionist" id="receptionist">
+            <option value="宮澤" th:selected="*{receptionist} == '宮澤'">宮澤</option>
+            <option value="鈴木" th:selected="*{receptionist} == '鈴木'">鈴木</option>
+            <option value="宮内副店長" th:selected="*{receptionist} == '宮内副店長'">宮内副店長</option>
+            <option value="一重大智" th:selected="*{receptionist} == '一重大智'">一重大智</option>
+            <option value="長瀬奈那" th:selected="*{receptionist} == '長瀬奈那'">長瀬奈那</option>
+            <option value="川端好" th:selected="*{receptionist} == '川端好'">川端好</option>
+            <option value="仲根祥子" th:selected="*{receptionist} == '仲根祥子'">仲根祥子</option>
+            <option value="鈴木主任" th:selected="*{receptionist} == '鈴木主任'">鈴木主任</option>
+            <option value="伊藤真紀子" th:selected="*{receptionist} == '伊藤真紀子'">伊藤真紀子</option>
+            <option value="大熊小百合" th:selected="*{receptionist} == '大熊小百合'">大熊小百合</option>
+            <option value="宇野麻登佳" th:selected="*{receptionist} == '宇野麻登佳'">宇野麻登佳</option>
+            <option value="渡部麻希" th:selected="*{receptionist} == '渡部麻希'">渡部麻希</option>
+            <option value="山口満樹" th:selected="*{receptionist} == '山口満樹'">山口満樹</option>
+            <option value="小林紗矢" th:selected="*{receptionist} == '小林紗矢'">小林紗矢</option>
+            <option value="後藤優美子" th:selected="*{receptionist} == '後藤優美子'">後藤優美子</option>
+            <option value="佐藤楓" th:selected="*{receptionist} == '佐藤楓'">佐藤楓</option>
+          </select>
+        </div>
+        <div class="col-2 form-inline">
+          <label for="orderClass">受注区分：</label>
+          <select class="form-control" name="orderClass" id="orderClass">
+            <option value="電話" th:selected="*{orderClass} == '電話'">電話</option>
+            <option value="INC" th:selected="*{orderClass} == 'INC'">INC</option>
+            <option value="注文書あり" th:selected="*{orderClass} == '注文書あり'">注文書あり</option>
+            <option value="新規ハガキ" th:selected="*{orderClass} == '新規ハガキ'">新規ハガキ</option>
+            <option value="先様" th:selected="*{orderClass} == '先様'">先様</option>
+          </select>
+        </div>
 
+      </div>
       <div
         th:if="${confirmMessage}"
         class="alert alert-success alert-dismissible fade show"
@@ -26,6 +66,13 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+      <div id="validMessageArea" class="alert alert-success alert-dismissible fade"
+      role = "alert">
+        <strong id="validMessage"></strong>
+        <button id="validCloseButton" type="button" class="close" aria-label="Close">
+          <span>&times;</span>
+        </button>
+    </div>
 
       <div
         th:if="${alertMessage}"
@@ -42,13 +89,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form
-        id="registOrderForm"
-        th:action="@{/registOrder}"
-        action="/registOrder"
-        th:object="${registOrderInputForm}"
-        method="post"
-      >
+      
         <input
           type="hidden"
           name="itemAllPrice"
@@ -356,18 +397,24 @@
                         />
                       </td>
                       <td>
-                        <input
-                          name="itemOption"
-                          type="text"
-                          class="form-control"
-                        />
+                        <select name="itemOption" class="form-control">
+                          <option value=""></option>
+                          <option value="包装のみ">包装のみ</option>
+                          <option value="無地のし">無地のし</option>
+                          <option value="お歳暮のし">お歳暮のし</option>
+                          <option value="お礼のし">お礼のし</option>
+                          <option value="のし（その他）">のし（その他）</option>
+                          <option value="ひとこと（感謝の気持ち）">ひとこと（感謝の気持ち）</option>
+                          <option value="ひとこと（ありがとう）">ひとこと（ありがとう）</option>
+                        </select>
                       </td>
                       <td>
                         <input
                           name="itemPrice"
-                          type="text"
+                          type="hidden"
                           class="form-control calcItems"
                         />
+                        <input name="itemPrice_taxInclude" type="text" class="form-control calcItems" />
                       </td>
                       <td>
                         <input
@@ -386,9 +433,10 @@
                       <td>
                         <input
                           name="subTotal"
-                          type="text"
+                          type="hidden"
                           class="form-control subTotal"
                         />
+                        <input name="subTotal_taxInclude" type="text" class="form-control subTotal" />
                       </td>
                     </tr>
                   </tbody>
@@ -402,11 +450,11 @@
             class="d-block"
             style="position: sticky; top: 72px"
           >
-            <div class="btn-group btn-group-toggle mb-4" data-toggle="buttons">
-              <button type="button" class="btn btn-primary" id="test_tel_send">
+            <div class="mb-4" data-toggle="buttons">
+              <button type="button" class="btn btn-primary" id="test_tel_send" style="margin-right:50px;">
                 受注確定
               </button>
-              <button type="button" class="btn btn-secondary" id="clear_button">
+              <button type="button" class="btn btn-secondary" id="clear_button" data-toggle="modal" data-target="#cancelModal">
                 クリア
               </button>
             </div>
@@ -776,6 +824,27 @@
             <button type="button" id="tel_modal_submit" class="btn btn-primary">
               Save changes
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--キャンセル確認用モーダル-->
+    <div class="modal fade" id="cancelModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">キャンセル確認</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>本当に削除しますか？</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">いいえ</button>
+            <a href="/nextengine-api/registOrder/"><button type="button" class="btn btn-primary">削除する</button></a>
           </div>
         </div>
       </div>

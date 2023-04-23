@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,8 +27,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import jp.co.kawakyo.nextengineapi.Entity.CustomerInfoForReceiveOrderForm;
 import jp.co.kawakyo.nextengineapi.Entity.ItemInfo;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
+import jp.co.kawakyo.nextengineapi.base.NeToken;
 import jp.co.kawakyo.nextengineapi.utils.KintoneConnect;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
+import jp.nextengine.api.sdk.NeApiClient;
 import jp.co.kawakyo.nextengineapi.Entity.RegistOrderInputForm;
 import com.kintone.client.model.record.Record;
 
@@ -35,6 +39,8 @@ public class ReceiveOrderController extends BaseController {
 
 	@Autowired
 	KintoneConnect kintoneClient;
+
+	// private static int sequence = 1;
 
 	@RequestMapping(value = "/registOrder", method = RequestMethod.GET)
 	private String showRegistOrderView(HttpServletRequest _request, HttpServletResponse _response, Model model) {
@@ -66,7 +72,9 @@ public class ReceiveOrderController extends BaseController {
 		// 失敗であれば失敗のメッセージとデータをそのまま返す
 		String resultMessage = String.valueOf(apiResponse.get("result"));
 		if (StringUtils.equals(resultMessage, "success")) {
-			model.addAttribute("confirmMessage", "登録成功しました。");
+			String orderId = apiParam.get("data_1").split(",")[40]
+					.substring(apiParam.get("data_1").split(",")[40].length() - 12);
+			model.addAttribute("confirmMessage", "登録成功しました。　受注番号：" + orderId);
 			model.addAttribute("registOrderInputForm", reloadBuyerInfoOnly(registOrderInputForm));
 		} else {
 			model.addAttribute("alertMessage", "登録失敗しました。再度入力してください。");
@@ -145,6 +153,8 @@ public class ReceiveOrderController extends BaseController {
 		rtnForm.setMemo(registOrderInputForm.getMemo());
 		rtnForm.setUsablePoint(String.valueOf(Long.valueOf(registOrderInputForm.getUsablePoint())
 				+ Math.round(Long.valueOf(registOrderInputForm.getItemAllPrice()) * 0.01)));
+		rtnForm.setReceptionist(registOrderInputForm.getReceptionist());
+		rtnForm.setOrderClass(registOrderInputForm.getOrderClass());
 
 		return rtnForm;
 	}
@@ -192,6 +202,12 @@ public class ReceiveOrderController extends BaseController {
 		if (StringUtils.isNotBlank(inputForm.getShippingSchedule())) {
 			rtn += "【出荷予定日：" + inputForm.getShippingSchedule() + "】";
 		}
+		if (StringUtils.isNotBlank(inputForm.getReceptionist())) {
+			rtn += "【担当者：" + inputForm.getReceptionist() + "】";
+		}
+		if (StringUtils.isNotBlank(inputForm.getOrderClass())) {
+			rtn += "【受注区分：" + inputForm.getOrderClass() + "】";
+		}
 
 		return rtn;
 	}
@@ -200,8 +216,26 @@ public class ReceiveOrderController extends BaseController {
 		String rtn = "店舗伝票番号,受注日,受注郵便番号,受注住所１,受注住所２,受注名,受注名カナ,受注電話番号,受注メールアドレス,発送郵便番号,発送先住所１,発送先住所２,発送先名,発送先カナ,発送電話番号,支払方法,発送方法,商品計,税金,発送料,手数料,ポイント,その他費用,合計金額,ギフトフラグ,時間帯指定,日付指定,作業者欄,備考,商品名,商品コード,商品価格,受注数量,商品オプション,出荷済フラグ,顧客区分,顧客コード,消費税率（%）,のし,ラッピング,メッセージ";
 
 		// 受注番号にいれる日付情報を取得
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddhhmmss");
 		Calendar today = Calendar.getInstance();
+
+		// // ファイルから取得する
+		// String sequence = rb.getString("sequence");
+		// logger.info("sequence:" + sequence);
+
+		// // ファイルに書き込みをする
+		// String sequenceStr = String.valueOf("0000" +
+		// String.valueOf(Integer.parseInt(sequence) + 1));
+		// Properties sequenceProperties = new Properties();
+		// sequenceProperties.setProperty("sequence",
+		// sequenceStr.substring(sequenceStr.length() - 5));
+		// try (OutputStream ostream = new
+		// FileOutputStream("src/main/resources/sequence.properties")) {
+		// OutputStreamWriter osw = new OutputStreamWriter(ostream, "UTF-8");
+		// sequenceProperties.store(osw, "Comments");
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
 
 		// 商品情報をリストで保持
 		String[] itemCodeList = inputForm.getItemCode().split(",", -1);
@@ -218,7 +252,7 @@ public class ReceiveOrderController extends BaseController {
 				break;
 			}
 			rtn += "\r\n";
-			rtn += String.join(",", Arrays.asList("order" + sdf.format(today.getTime()),
+			rtn += String.join(",", Arrays.asList(sdf.format(today.getTime()),
 					inputForm.getOrderDate() + StringUtils.SPACE
 							+ String.format("%2s", today.get(Calendar.HOUR_OF_DAY)).replace(" ", "0") + ":"
 							+ String.format("%2s", today.get(Calendar.MINUTE)).replace(" ", "0") + ":"
@@ -307,7 +341,8 @@ public class ReceiveOrderController extends BaseController {
 			rtnInfo.setZip_code(record.getSingleLineTextFieldValue("zipcode"));
 			rtnInfo.setMail_address("kintone@ramenkan.com");
 			rtnInfo.setMemo(record.getMultiLineTextFieldValue("memo"));
-			rtnInfo.setUsablePoint(String.valueOf(record.getNumberFieldValue("point")));
+			rtnInfo.setUsablePoint(record.getNumberFieldValue("point") == null ? "0"
+					: String.valueOf(record.getNumberFieldValue("point")));
 			rtn.add(rtnInfo);
 		}
 		return rtn;
