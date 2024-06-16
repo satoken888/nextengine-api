@@ -8,31 +8,29 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.kintone.client.model.record.Record;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jp.co.kawakyo.nextengineapi.Entity.CustomerInfoForReceiveOrderForm;
 import jp.co.kawakyo.nextengineapi.Entity.ItemInfo;
+import jp.co.kawakyo.nextengineapi.Entity.RegistOrderInputForm;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
-import jp.co.kawakyo.nextengineapi.base.NeToken;
 import jp.co.kawakyo.nextengineapi.utils.KintoneConnect;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
-import jp.nextengine.api.sdk.NeApiClient;
-import jp.co.kawakyo.nextengineapi.Entity.RegistOrderInputForm;
-import com.kintone.client.model.record.Record;
 
 @Controller
 public class ReceiveOrderController extends BaseController {
@@ -42,7 +40,7 @@ public class ReceiveOrderController extends BaseController {
 
 	// private static int sequence = 1;
 
-	@RequestMapping(value = "/registOrder", method = RequestMethod.GET)
+	@GetMapping("/registOrder")
 	private String showRegistOrderView(HttpServletRequest _request, HttpServletResponse _response, Model model) {
 		model.addAttribute("registOrderInputForm", new RegistOrderInputForm());
 
@@ -53,7 +51,7 @@ public class ReceiveOrderController extends BaseController {
 		return "registOrder";
 	}
 
-	@RequestMapping(value = "/registOrder", method = RequestMethod.POST)
+	@PostMapping("/registOrder")
 	private String registOrder(HttpServletRequest _request, HttpServletResponse _response,
 			@ModelAttribute RegistOrderInputForm registOrderInputForm, Model model) {
 

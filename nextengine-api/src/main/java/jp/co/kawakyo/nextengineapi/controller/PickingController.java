@@ -19,16 +19,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +34,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jp.co.kawakyo.nextengineapi.Entity.DmPickingDataCsvRecord;
 import jp.co.kawakyo.nextengineapi.Entity.PickingInputForm;
 import jp.co.kawakyo.nextengineapi.Entity.PickingTableRecord;
@@ -44,15 +43,15 @@ import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.base.NeToken;
 import jp.co.kawakyo.nextengineapi.utils.Constant;
 import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
+import jp.co.kawakyo.nextengineapi.utils.NeApiClient;
+import jp.co.kawakyo.nextengineapi.utils.NeApiClientException;
 import jp.co.kawakyo.nextengineapi.utils.NeApiURL;
-import jp.nextengine.api.sdk.NeApiClient;
-import jp.nextengine.api.sdk.NeApiClientException;
 import lombok.Data;
 
 @Controller
 public class PickingController extends BaseController {
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@GetMapping("/")
 	private String initialView(HttpServletRequest _request, HttpServletResponse _response, Model model)
 			throws NeApiClientException, IOException {
 
@@ -91,7 +90,7 @@ public class PickingController extends BaseController {
 		return "index";
 	}
 
-	@RequestMapping(value = "/picking", method = RequestMethod.POST)
+	@PostMapping("/picking")
 	private String showPickingData(HttpServletRequest _request, HttpServletResponse _response, Model model,
 			@ModelAttribute PickingInputForm pickingInputForm,
 			@RequestParam("dmPickingFile") MultipartFile uploadFile) {

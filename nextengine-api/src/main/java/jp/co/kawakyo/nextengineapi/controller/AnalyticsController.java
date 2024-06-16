@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jp.co.kawakyo.nextengineapi.Entity.AnalyticsInputForm;
 import jp.co.kawakyo.nextengineapi.base.BaseController;
 import jp.co.kawakyo.nextengineapi.base.NeToken;
@@ -29,7 +28,7 @@ import lombok.Data;
 @Controller
 public class AnalyticsController extends BaseController {
 
-    @GetMapping(value = "analytics")
+    @GetMapping(value = "/analytics")
     private String showAnalyticsIndex(HttpServletRequest _request, HttpServletResponse _response, Model model) {
 
         logger.info("analytics start");
@@ -49,7 +48,7 @@ public class AnalyticsController extends BaseController {
         return "analytics";
     }
 
-    @PostMapping(value = "analytics")
+    @PostMapping(value = "/analytics")
     private String showItemRanking(HttpServletRequest _request, HttpServletResponse _response, Model model,
             @ModelAttribute AnalyticsInputForm analyticsInputForm) {
 

@@ -12,21 +12,16 @@ import jp.co.kawakyo.nextengineapi.utils.ConvertUtils;
 @Controller
 public class KawakyoErrorController implements ErrorController {
 
-	@RequestMapping(value="/error")
+	@RequestMapping(value = "/error")
 	private String showErrorPage(Model model) throws JsonProcessingException {
 
 		try {
-			model.addAttribute("data",ConvertUtils.convertOb2String(model));
+			model.addAttribute("data", ConvertUtils.convertOb2String(model));
 		} catch (JsonProcessingException e) {
-			model.addAttribute("errorMessage",ConvertUtils.convertOb2String(e));
+			model.addAttribute("errorMessage", ConvertUtils.convertOb2String(e));
 			e.printStackTrace();
 		}
 		return "error";
-	}
-
-	@Override
-	public String getErrorPath() {
-		return "/error";
 	}
 
 }

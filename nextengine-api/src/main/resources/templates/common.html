@@ -1,59 +1,76 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="meta_header(title,links,scripts)">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Cache-Control" content="no-cache">
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link rel="stylesheet"
-	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-	crossorigin="anonymous">
-<link rel="stylesheet"
-	href="https://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css">
-<link rel="stylesheet" th:href="@{/css/style.css}" type="text/css">
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery-ui-i18n.min.js"></script>
-<script
-	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-	integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-	crossorigin="anonymous"></script>
-<script
-	src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-	integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-	crossorigin="anonymous"></script>
-<title th:text="${title}+' | sample app'">各ページタイトル | sample app</title>
+  <head th:fragment="meta_header(title,links,scripts)">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery-ui-i18n.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <title th:text="${title}+' | sample app'">
+      各ページタイトル | sample app
+    </title>
 
-<th:block th:replace="${links} ?: _" />
-<th:block th:replace="${scripts} ?: _" />
-</head>
-<body>
-	<nav th:fragment="header"
-		class="navbar navbar-expand-sm sticky-top navbar-dark bg-dark my-3">
-		<button class="navbar-toggler" type="button" data-toggle="collapse"
-			data-target="#navbarNav4" aria-controls="navbarNav4"
-			aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-		<a class="navbar-brand" href="/nextengine-api/">Kawakyo NextEngine
-			API</a>
-		<div class="collapse navbar-collapse">
-			<ul class="navbar-nav header-nav">
-				<li class="nav-item"><a class="nav-link"
-					href="/nextengine-api/">ピッキングリスト取得</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="/nextengine-api/registOrder/">受注登録</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="/nextengine-api/analytics/">分析</a></li>
-			</ul>
-		</div>
-	</nav>
+    <th:block th:replace="${links} ?: _" />
+    <th:block th:replace="${scripts} ?: _" />
+  </head>
+  <body>
+    <nav
+      th:fragment="header"
+      class="navbar navbar-expand-sm sticky-top navbar-dark bg-dark my-3"
+    >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav4"
+        aria-controls="navbarNav4"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" th:href="@{/}">Kawakyo NextEngine API</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav header-nav">
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/}">ピッキングリスト取得</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/registOrder}">受注登録</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" th:href="@{/analytics}">分析</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-	<
-</body>
+    <
+  </body>
 </html>
