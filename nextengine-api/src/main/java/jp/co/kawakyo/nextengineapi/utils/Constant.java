@@ -1,5 +1,9 @@
 package jp.co.kawakyo.nextengineapi.utils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public final class Constant {
 	public final static String UPLOADED_FOLDER = "upload/";
 	public final static String ROOT_PATH = "/";
@@ -16,6 +20,19 @@ public final class Constant {
 
 	public final static String NE_DIV_OUTPUT_SHIPPING = "1";
 	public final static String NE_DIV_OUTPUT_ORDER = "2";
+
+	public static final List<String> COMEBACK_ITEMCODE_LIST;
+	static {
+		List<String> list = new ArrayList<String>();
+		list.add("0288s");
+		list.add("0200s");
+		list.add("0201s");
+		list.add("0289");
+		list.add("7404s");
+		list.add("7400s");
+		list.add("7300");
+		COMEBACK_ITEMCODE_LIST = Collections.unmodifiableList(list);
+	}
 
 	public final static String JSON_CONVERSION_ITEMQUANTITY = "{"
 			+ "\"0100-2-0102-2：お徳用喜多方ラーメン赤箱12食入×2箱 味噌のみ　太麺\":{\"0100-0902：お徳用喜多方ラーメン赤箱12食入 味噌のみ　太麺\":2},"

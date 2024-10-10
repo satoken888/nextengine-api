@@ -1,168 +1,259 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+  <head
+    lang="ja"
+    th:replace="common :: meta_header('picking',~{::link},~{::script})"
+  >
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"
+    ></script>
+  </head>
 
-<head lang="ja" th:replace="common :: meta_header('picking',~{::link},~{::script})">
+  <body>
+    <div th:replace="common :: header"></div>
 
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css" />
-	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
-</head>
+    <div class="container">
+      <h1>ピッキングリスト取得画面</h1>
+      <form
+        role="form"
+        action="/picking"
+        th:action="@{/picking}"
+        th:object="${pickingInputForm}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div class="flex">
+          <div class="left-search-area">
+            <div class="form-row">
+              <label for="divShop"> 店舗区分： </label>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  value="DM"
+                  name="divShop"
+                  id="radio_DM"
+                  th:checked="*{divShop == 'DM'}"
+                />
+                <label class="form-check-label" for="radio_DM"> 通販部 </label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  value="honkan"
+                  name="divShop"
+                  id="radio_honkan"
+                  th:checked="*{divShop == 'honkan'}"
+                />
+                <label class="form-check-label" for="radio_honkan">
+                  本館
+                </label>
+              </div>
+            </div>
+            <div class="form-row">
+              <label for="divShop"> 出力区分： </label>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  value="1"
+                  name="divOutput"
+                  id="radio_shipping"
+                  th:checked="*{divOutput == '1'}"
+                />
+                <label class="form-check-label" for="radio_shipping">
+                  出荷確認用
+                </label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  value="2"
+                  name="divOutput"
+                  id="radio_order"
+                  th:checked="*{divOutput == '2'}"
+                />
+                <label class="form-check-label" for="radio_order">
+                  工場発注用（試験中）
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="datepicker"
+                >出荷予定日:
+                <input
+                  type="text"
+                  id="datepicker_start"
+                  class="form-control"
+                  name="inputStartPickingDate"
+                  th:field="*{inputStartPickingDate}"
+              /></label>
+              <span style="margin: 0 5px">～</span>
+              <label for="datepicker_end"
+                ><input
+                  type="text"
+                  id="datepicker_end"
+                  class="form-control"
+                  name="inputEndPickingDate"
+                  th:field="*{inputEndPickingDate}"
+              /></label>
+            </div>
+            <div class="btn-group">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                name="search"
+                value="search"
+              >
+                検索
+              </button>
+              <button id="resetButton" type="button" class="btn btn-warning">
+                クリア
+              </button>
+            </div>
+          </div>
+          <div class="right-search-area">
+            <div class="form-group">
+              <label for="inputFile">DM ピッキングファイルを以下へ↓</label>
+              <div class="input-group">
+                <div class="custom-file">
+                  <input
+                    type="file"
+                    class="custom-file-input"
+                    id="dmPickingFile"
+                    name="dmPickingFile"
+                  />
+                  <label
+                    class="custom-file-label"
+                    for="dmPickingFile"
+                    data-browse="参照"
+                    >ファイルを選択(ここにドロップすることもできます)</label
+                  >
+                </div>
+                <div class="input-group-append">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary input-group-text"
+                    id="inputFileReset"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              name="pickingUpload"
+              value="pickingUpload"
+            >
+              ファイル送信
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="message-area" th:text="${message}"></div>
+      <table id="resultTable" class="table table-striped">
+        <thead class="thead-dark" th:if="${pickingFileInputDiv}">
+          <!-- アップロードファイルありの場合 -->
+          <tr>
+            <th scope="col">商品コード↓</th>
+            <th scope="col">商品名↓</th>
+            <th scope="col" th:text="合計"></th>
+            <th scope="col" th:text="DM"></th>
+            <th scope="col" th:text="EC"></th>
+          </tr>
+        </thead>
+        <thead class="thead-dark" th:unless="${pickingFileInputDiv}">
+          <!-- アップロードファイルなしの場合 -->
+          <tr>
+            <th scope="col"></th>
+            <th scope="col"></th>
+            <th scope="col" th:text="合計"></th>
+            <th scope="col" th:each="date : ${sendDateList}">
+              [[${#strings.substring(date,0,10)}]]
+            </th>
+          </tr>
+          <tr>
+            <th scope="col">商品コード↓</th>
+            <th scope="col">出荷件数</th>
+            <th
+              th:unless="${pickingFileInputDiv}"
+              scope="col"
+              th:each="count : ${countOrder}"
+            >
+              [[${count}]]件
+            </th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <!-- /* -->
+          <tr th:each="entry : ${itemQuantityMap}">
+            <th scope="row">[[${entry.key}]]</th>
+            <td th:each="quantity, stat2 : ${entry.value}">[[${quantity}]]</td>
+          </tr>
+          <!-- */ -->
+          <tr th:each="record : ${pickingTableRecordList}">
+            <th scope="row">[[${record.itemCode}]]</th>
+            <th scope="row">[[${record.itemName}]]</th>
+            <td scope="row">[[${record.total}]]</td>
+            <td
+              th:unless="${pickingFileInputDiv}"
+              th:each="quantity, stat2 : ${record.sumList}"
+            >
+              [[${quantity}]]
+            </td>
+            <td th:if="${pickingFileInputDiv}" th:text="${record.dmTotal}"></td>
+            <td th:if="${pickingFileInputDiv}" th:text="${record.ecTotal}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <script type="text/javascript">
+      $(function () {
+        $.datepicker.setDefaults($.datepicker.regional["ja"]);
+        $("#datepicker_start,#datepicker_end").datepicker({
+          dateFormat: "yy-mm-dd",
+        });
+      });
+      $("#resetButton").on("click", function () {
+        $("#datepicker_start,#datepicker_end").val("");
+      });
 
-<body>
+      $(function () {
+        $("#resultTable").DataTable({
+          //日本語化
+          language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.16/i18n/Japanese.json",
+          },
 
-	<div th:replace="common :: header"></div>
-
-	<div class="container">
-		<h1>ピッキングリスト取得画面</h1>
-		<form role="form" action="/picking" th:action="@{/picking}" th:object="${pickingInputForm}" method="post"
-			enctype="multipart/form-data">
-			<div class="flex">
-				<div class="left-search-area">
-					<div class="form-row">
-						<label for="divShop"> 店舗区分： </label>
-						<div class="form-check form-check-inline">
-							<input class="form-check-input" type="radio" value="DM" name="divShop" id="radio_DM"
-								th:checked="*{divShop == 'DM'}">
-							<label class="form-check-label" for="radio_DM"> 通販部 </label>
-						</div>
-						<div class="form-check form-check-inline">
-							<input class="form-check-input" type="radio" value="honkan" name="divShop" id="radio_honkan"
-								th:checked="*{divShop == 'honkan'}"> <label class="form-check-label" for="radio_honkan">
-								本館
-							</label>
-						</div>
-					</div>
-					<div class="form-row">
-						<label for="divShop"> 出力区分： </label>
-						<div class="form-check form-check-inline">
-							<input class="form-check-input" type="radio" value="1" name="divOutput" id="radio_shipping"
-								th:checked="*{divOutput == '1'}"> <label class="form-check-label" for="radio_shipping">
-								出荷確認用 </label>
-						</div>
-						<div class="form-check form-check-inline">
-							<input class="form-check-input" type="radio" value="2" name="divOutput" id="radio_order"
-								th:checked="*{divOutput == '2'}">
-							<label class="form-check-label" for="radio_order">
-								工場発注用（試験中） </label>
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="datepicker">出荷予定日: <input type="text" id="datepicker_start" class="form-control"
-								name="inputStartPickingDate" th:field="*{inputStartPickingDate}"></label>
-						<span style="margin: 0 5px;">～</span> <label for="datepicker_end"><input type="text"
-								id="datepicker_end" class="form-control" name="inputEndPickingDate"
-								th:field="*{inputEndPickingDate}"></label>
-					</div>
-					<div class="btn-group">
-						<button type="submit" class="btn btn-primary" name="search" value="search">検索</button>
-						<button id="resetButton" type="button" class="btn btn-warning">クリア</button>
-					</div>
-				</div>
-				<div class="right-search-area">
-					<div class="form-group">
-						<label for="inputFile">DM ピッキングファイルを以下へ↓</label>
-						<div class="input-group">
-							<div class="custom-file">
-								<input type="file" class="custom-file-input" id="dmPickingFile" name="dmPickingFile">
-								<label class="custom-file-label" for="dmPickingFile"
-									data-browse="参照">ファイルを選択(ここにドロップすることもできます)</label>
-							</div>
-							<div class="input-group-append">
-								<button type="button" class="btn btn-outline-secondary input-group-text"
-									id="inputFileReset">取消</button>
-							</div>
-						</div>
-					</div>
-					<button type="submit" class="btn btn-primary" name="pickingUpload"
-						value="pickingUpload">ファイル送信</button>
-				</div>
-			</div>
-		</form>
-		<div class="message-area" th:text="${message}"></div>
-		<table id="resultTable" class="table table-striped">
-			<thead class="thead-dark" th:if="${pickingFileInputDiv}">
-				<!-- アップロードファイルありの場合 -->
-				<tr>
-					<th scope="col">商品コード↓</th>
-					<th scope="col">商品名↓</th>
-					<th scope="col" th:text="合計"></th>
-					<th scope="col" th:text="DM"></th>
-					<th scope="col" th:text="EC"></th>
-				</tr>
-			</thead>
-			<thead class="thead-dark" th:unless="${pickingFileInputDiv}">
-				<!-- アップロードファイルなしの場合 -->
-				<tr>
-					<th scope="col"></th>
-					<th scope="col"></th>
-					<th scope="col" th:text="合計"></th>
-					<th scope="col" th:each="date : ${sendDateList}">[[${#strings.substring(date,0,10)}]]</th>
-				</tr>
-				<tr>
-					<th scope="col">商品コード↓</th>
-					<th scope="col">出荷件数</th>
-					<th th:unless="${pickingFileInputDiv}" scope="col" th:each="count : ${countOrder}">[[${count}]]件</th>
-				</tr>
-			</thead>
-			<tbody class="">
-				<!-- /* -->
-				<tr th:each="entry : ${itemQuantityMap}">
-					<th scope="row">[[${entry.key}]]</th>
-					<td th:each="quantity, stat2 : ${entry.value}">[[${quantity}]]</td>
-				</tr>
-				<!-- */ -->
-				<tr th:each="record : ${pickingTableRecordList}">
-					<th scope="row">[[${record.itemCode}]]</th>
-					<th scope="row">[[${record.itemName}]]</th>
-					<td scope="row">[[${record.total}]]</th>
-					<td th:unless="${pickingFileInputDiv}" th:each="quantity, stat2 : ${record.sumList}">[[${quantity}]]</td>
-					<td th:if="${pickingFileInputDiv}" th:text="${record.dmTotal}"></td>
-					<td th:if="${pickingFileInputDiv}" th:text="${record.ecTotal}"></td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-	<script type="text/javascript">
-		$(function () {
-			$.datepicker.setDefaults($.datepicker.regional["ja"]);
-			$("#datepicker_start,#datepicker_end").datepicker({
-				dateFormat: 'yy-mm-dd'
-			});
-		});
-		$("#resetButton").on("click", function () {
-			$("#datepicker_start,#datepicker_end").val("");
-		});
-
-		$(function () {
-
-			$("#resultTable")
-				.DataTable(
-					{
-
-						//日本語化
-						"language": {
-							"url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Japanese.json"
-						},
-
-						// 件数切替機能 無効
-						lengthChange: false,
-						// ページング機能 無効
-						paging: false,
-						//再表示の際は再度構築
-						destroy: true
-
-					});
-		});
-	</script>
-	<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
-	<script>
-		bsCustomFileInput.init();
-		document.getElementById('inputFileReset').addEventListener('click',
-			function () {
-				var elem = document.getElementById('dmPickingFile');
-				elem.value = '';
-				elem.dispatchEvent(new Event('change'));
-			});
-	</script>
-</body>
-
+          // 件数切替機能 無効
+          lengthChange: false,
+          // ページング機能 無効
+          paging: false,
+          //再表示の際は再度構築
+          destroy: true,
+        });
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+    <script>
+      bsCustomFileInput.init();
+      document
+        .getElementById("inputFileReset")
+        .addEventListener("click", function () {
+          var elem = document.getElementById("dmPickingFile");
+          elem.value = "";
+          elem.dispatchEvent(new Event("change"));
+        });
+    </script>
+  </body>
 </html>

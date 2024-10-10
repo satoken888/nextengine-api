@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    lang="ja"
+    th:replace="common :: meta_header('check',~{::link},~{::script})"
+  >
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"
+    ></script>
+  </head>
+
+  <body>
+    <div th:replace="common :: header"></div>
+
+    <div class="container">
+      <h1>DM受注チェック</h1>
+      <form
+        role="form"
+        action="/dmcheck"
+        th:action="@{/dmcheck}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div>
+          <div class="form-group">
+            <label for="inputFile"
+              >リピート君の受注チェックファイルを以下へ↓</label
+            >
+            <div class="input-group">
+              <div class="custom-file">
+                <input
+                  type="file"
+                  class="custom-file-input"
+                  id="checkListFile"
+                  name="checkListFile"
+                />
+                <label
+                  class="custom-file-label"
+                  for="checkListFile"
+                  data-browse="参照"
+                  >ファイルを選択(ここにドロップすることもできます)</label
+                >
+              </div>
+              <div class="input-group-append">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary input-group-text"
+                  id="inputFileReset"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            name="checkOrder"
+            value="checkOrder"
+          >
+            ファイル送信
+          </button>
+        </div>
+      </form>
+      <div class="message-area mt-5" th:utext="${message}"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+    <script>
+      bsCustomFileInput.init();
+      document
+        .getElementById("inputFileReset")
+        .addEventListener("click", function () {
+          var elem = document.getElementById("checkListFile");
+          elem.value = "";
+          elem.dispatchEvent(new Event("change"));
+        });
+    </script>
+  </body>
+</html>
