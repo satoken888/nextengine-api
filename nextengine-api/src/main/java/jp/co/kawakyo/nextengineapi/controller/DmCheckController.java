@@ -83,7 +83,7 @@ public class DmCheckController {
         String alertMessage = "【先様のお名前が受注メモに入ってない】\n";
 
         for (OrderCheckListEntity entity : orderCheckList) {
-            if (StringUtils.equals(entity.getBuyerTel(), entity.getDestTel())) {
+            if (!StringUtils.equals(entity.getBuyerTel(), entity.getDestTel())) {
                 // 依頼主と送り先が違う（先様）の受注の場合
                 if (StringUtils.isBlank(entity.getOrderMemo())) {
                     alertMessage += entity.getOrderNo() + "\n";
