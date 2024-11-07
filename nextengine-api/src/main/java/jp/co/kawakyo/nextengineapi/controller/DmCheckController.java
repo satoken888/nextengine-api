@@ -3,6 +3,7 @@ package jp.co.kawakyo.nextengineapi.controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,8 @@ public class DmCheckController {
         alertMessage += checkDeferredFee(orderCheckList);
 
         // ●●●円以上購入の際のプレゼント抜けチェック
-        alertMessage += checkPresent(orderCheckList, 6480, "241010");
+        alertMessage += checkPresent(orderCheckList, 4500, "241105", Arrays.asList("829", "830"),
+                Arrays.asList("831"));
 
         // カムバックのプレゼントチェック
         alertMessage += checkPresentComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
@@ -62,11 +64,70 @@ public class DmCheckController {
         // カムバックの送料チェック
         alertMessage += checkPostageComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
 
+        // 新規ハガキのプレゼント抜けチェック
+        alertMessage += checkNewPostcardPresent(orderCheckList);
+
+        // 先様のお名前納品書に記載無しチェック
+        alertMessage += checkGiftNoName(orderCheckList);
+
         // 送料込商品ある場合の送料ヌケモレチェック
         alertMessage += checkShippingIncludedItem(orderCheckList);
 
         // 改行コードをHTML用に変換する
         alertMessage = convertLineBreakCode(alertMessage);
+
+        return alertMessage;
+    }
+
+    private String checkGiftNoName(List<OrderCheckListEntity> orderCheckList) {
+        String alertMessage = "【先様のお名前が受注メモに入ってない】\n";
+
+        for (OrderCheckListEntity entity : orderCheckList) {
+            if (StringUtils.equals(entity.getBuyerTel(), entity.getDestTel())) {
+                // 依頼主と送り先が違う（先様）の受注の場合
+                if (StringUtils.isBlank(entity.getOrderMemo())) {
+                    alertMessage += entity.getOrderNo() + "\n";
+                }
+            }
+        }
+        alertMessage += "\n";
+        return alertMessage;
+    }
+
+    private String checkNewPostcardPresent(List<OrderCheckListEntity> orderCheckList) {
+        String alertMessage = "【新規ハガキのプレゼント抜け】\n";
+
+        for (OrderCheckListEntity entity : orderCheckList) {
+            boolean isError = false;
+            boolean isNewPostCardOrder = false;
+            List<OrderCheckListDetailsEntity> detailsList = entity.getDetailsList();
+            for (OrderCheckListDetailsEntity detail : detailsList) {
+                // 受注リストをまわして、受注の中に550-25新規ハガキの注文があるか確認する
+                if (StringUtils.equals("550-25", detail.getItemCode())) {
+                    isNewPostCardOrder = true;
+                    break;
+                }
+            }
+
+            if (isNewPostCardOrder) {
+                // 新規ハガキの受注と判断した場合
+
+                isError = true;
+                for (OrderCheckListDetailsEntity detail : detailsList) {
+                    if (StringUtils.equals("9000-94", detail.getItemCode())) {
+                        // 注文内容の中に9000-94があれば問題なしとする。
+                        isError = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isError) {
+                alertMessage += entity.getOrderNo() + "\n";
+            }
+        }
+
+        alertMessage += "\n";
 
         return alertMessage;
     }
@@ -90,9 +151,22 @@ public class DmCheckController {
                 // 送料込み商品を購入している場合
                 boolean isError = true;
                 for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
-                    if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() == 0) {
+                    // if (StringUtils.equals(detail.getBreakdownName(), "運賃") &&
+                    // detail.getSubTotal() == 0) {
+                    // isError = false;
+                    // break;
+                    // }
+                    if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() == 0
+                            && !StringUtils.equals("沖縄県", entity.getDestPrefecture())) {
+                        // 受注内容が沖縄県以外の送り先で、なおかつ送料無料になっている場合
                         isError = false;
                         break;
+                    } else if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() == 2020
+                            && StringUtils.equals("沖縄県", entity.getDestPrefecture())) {
+                        // 受注内容が沖縄県への送り先で、なおかつ送料が追加送料の2020円が追加されている場合
+                        isError = false;
+                        break;
+
                     }
                 }
                 if (isError) {
@@ -124,9 +198,17 @@ public class DmCheckController {
             if (isComeback) {
                 boolean isError = false;
                 for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                    if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 0) {
+                    if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 0
+                            && !StringUtils.equals("沖縄県", order.getDestPrefecture())) {
+                        // 受注内容が沖縄県への送り先ではなく、なおかつ送料無料になっていない場合
                         isError = true;
                         break;
+                    } else if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 2020
+                            && StringUtils.equals("沖縄県", order.getDestPrefecture())) {
+                        // 受注う内容が沖縄県への送り先で、なおかつ送料が追加送料の2020円が追加されていない場合
+                        isError = true;
+                        break;
+
                     }
                 }
                 if (isError) {
@@ -181,13 +263,14 @@ public class DmCheckController {
      * @param string
      * @return
      */
-    private String checkPresent(List<OrderCheckListEntity> orderCheckList, int thresholdPrice, String presentItemCode) {
+    private String checkPresent(List<OrderCheckListEntity> orderCheckList, int thresholdPrice, String presentItemCode,
+            List<String> excludeEventCodeList, List<String> targetEventCodeList) {
 
-        String alertMessage = "【" + thresholdPrice + "円以上購入の際のプレゼント抜け】\n";
+        String alertMessage = "【" + thresholdPrice + "円以上購入の際のプレゼント(" + presentItemCode + ")抜け】\n";
 
         for (OrderCheckListEntity entity : orderCheckList) {
-            if (entity.getTotalEarnings() >= thresholdPrice && !StringUtils.equals("829", entity.getEventCode())
-                    && !StringUtils.equals("830", entity.getEventCode())
+            if (entity.getTotalEarnings() >= thresholdPrice && !excludeEventCodeList.contains(entity.getEventCode())
+                    && (targetEventCodeList.isEmpty() || targetEventCodeList.contains(entity.getEventCode()))
                     && !StringUtils.equals(entity.getCoolDiv(), "冷凍")) {
                 boolean isError = true;
                 for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
@@ -317,9 +400,13 @@ public class DmCheckController {
 
                 String orderNo = split[keyMap.get("受注番号")];
                 String buyerCode = split[keyMap.get("依頼主ｺｰﾄﾞ")];
+                String buyerTel = split[keyMap.get("依頼主TEL")];
+                String destTel = split[keyMap.get("届け先TEL")];
                 String eventNo = split[keyMap.get("ｲﾍﾞﾝﾄNO")];
                 String eventName = split[keyMap.get("ｲﾍﾞﾝﾄ名")];
                 Integer subtotal = Integer.valueOf(split[keyMap.get("小計請求金額")]);
+                String destPrefecture = split[keyMap.get("届け先都道府県")];
+                String orderMemo = split[keyMap.get("受注メモ欄")];
                 String paymentMethod = split[keyMap.get("請求書種別名称")];
                 String coolDiv = split[keyMap.get("クール区分")];
                 String breakdownName = split[keyMap.get("内訳名称")];
@@ -355,7 +442,9 @@ public class DmCheckController {
                             || StringUtils.equals(breakdownName, "ポイント利用")) {
                         subtotal = subtotal - detailsSubTotal;
                     }
-                    OrderCheckListEntity newEntity = new OrderCheckListEntity(orderNo, buyerCode, subtotal, eventNo,
+                    OrderCheckListEntity newEntity = new OrderCheckListEntity(orderNo, buyerCode, buyerTel, destTel,
+                            subtotal,
+                            destPrefecture, orderMemo, eventNo,
                             eventName,
                             paymentMethod, coolDiv,
                             detailsEntityList);

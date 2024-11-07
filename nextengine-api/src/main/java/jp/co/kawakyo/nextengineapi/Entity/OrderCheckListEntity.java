@@ -13,9 +13,19 @@ public class OrderCheckListEntity {
     private String orderNo;
     /** 購入者コード */
     private String buyerCode;
+    /** 購入者電話番号 */
+    private String buyerTel;
+    /** 送り先様電話番号 */
+    private String destTel;
 
     /** 小計金額（送料・手数料・ポイント計算済み） */
     private Integer totalEarnings;
+
+    /** 届け先都道府県 */
+    private String destPrefecture;
+
+    /** 受注メモ欄 */
+    private String orderMemo;
 
     /** イベントコード */
     private String eventCode;
