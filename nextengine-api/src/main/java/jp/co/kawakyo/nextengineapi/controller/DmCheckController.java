@@ -99,21 +99,27 @@ public class DmCheckController {
 
         for (OrderCheckListEntity entity : orderCheckList) {
             boolean isError = false;
-            boolean isNewPostCardOrder = false;
+            boolean isPresentTarget = false;
             List<OrderCheckListDetailsEntity> detailsList = entity.getDetailsList();
             for (OrderCheckListDetailsEntity detail : detailsList) {
-                // 受注リストをまわして、受注の中に550-25新規ハガキの注文があるか確認する
-                if (StringUtils.equals("550-25", detail.getItemCode())) {
-                    isNewPostCardOrder = true;
+                // 受注リストをまわして、プレゼント対象かのチェックを行う
+                // 550-25を２個以上購入しているか
+                // 550-22,550-23,550-24を１個以上購入しているかが条件
+                if ((StringUtils.equals("550-25", detail.getItemCode()) && detail.getQuantity() > 1)
+                        || StringUtils.equals("550-22", detail.getItemCode())
+                        || StringUtils.equals("550-23", detail.getItemCode())
+                        || StringUtils.equals("550-24", detail.getItemCode())) {
+                    isPresentTarget = true;
                     break;
                 }
             }
 
-            if (isNewPostCardOrder) {
-                // 新規ハガキの受注と判断した場合
+            if (isPresentTarget) {
+                // プレゼント対象と判断した場合
 
                 isError = true;
                 for (OrderCheckListDetailsEntity detail : detailsList) {
+                    // 9000-94のプレゼントが付与されているか確認する。
                     if (StringUtils.equals("9000-94", detail.getItemCode())) {
                         // 注文内容の中に9000-94があれば問題なしとする。
                         isError = false;
