@@ -5,8 +5,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -82,15 +84,36 @@ public class DmCheckController {
     private String checkGiftNoName(List<OrderCheckListEntity> orderCheckList) {
         String alertMessage = "【先様のお名前が受注メモに入ってない】\n";
 
+        Set<String> telSet = new HashSet<String>();
         for (OrderCheckListEntity entity : orderCheckList) {
             if (!StringUtils.equals(entity.getBuyerTel(), entity.getDestTel())) {
                 // 依頼主と送り先が違う（先様）の受注の場合
-                if (StringUtils.isBlank(entity.getOrderMemo())) {
+                if (!StringUtils.contains(entity.getOrderMemo(), "様分")) {
+                    // 先様注文の場合に、「様分」の表記が含まれない場合は
+                    // エラー表示する。
                     alertMessage += entity.getOrderNo() + "\n";
+                }
+
+                // 先様へ発送する方の依頼主電話番号をリスト化
+                telSet.add(entity.getBuyerTel());
+            }
+        }
+        alertMessage += "\n【先様注文者のご自宅分受注メモにご自宅分記載なし】\n";
+
+        if (telSet.size() > 0) {
+            for (OrderCheckListEntity entity : orderCheckList) {
+                if (telSet.contains(entity.getBuyerTel())
+                        && StringUtils.equals(entity.getBuyerTel(), entity.getDestTel())) {
+                    // 先様の注文をしたお客様のご自宅分注文の場合
+                    // 受注メモにご自宅分の記載がなければエラー表示する。
+                    if (!StringUtils.contains(entity.getOrderMemo(), "ご依頼主様分")) {
+                        alertMessage += entity.getOrderNo() + "\n";
+                    }
                 }
             }
         }
         alertMessage += "\n";
+
         return alertMessage;
     }
 
