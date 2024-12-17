@@ -11,6 +11,8 @@ public class OrderCheckListEntity {
 
     /** 受注番号 */
     private String orderNo;
+    /** 受注区分番号 */
+    private String divOrder;
     /** 購入者コード */
     private String buyerCode;
     /** 購入者電話番号 */

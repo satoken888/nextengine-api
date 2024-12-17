@@ -57,14 +57,17 @@ public class DmCheckController {
         alertMessage += checkDeferredFee(orderCheckList);
 
         // ●●●円以上購入の際のプレゼント抜けチェック
-        alertMessage += checkPresent(orderCheckList, 4500, "241105", Arrays.asList("829", "830"),
-                Arrays.asList("831"));
+        alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250110", null,
+                Arrays.asList("837"));
 
         // カムバックのプレゼントチェック
-        alertMessage += checkPresentComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
+        alertMessage += checkPresentComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST, "241229");
 
         // カムバックの送料チェック
         alertMessage += checkPostageComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
+
+        // カムバックのポイント設定抜けチェック
+        alertMessage += checkPointSetting(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
 
         // 新規ハガキのプレゼント抜けチェック
         alertMessage += checkNewPostcardPresent(orderCheckList);
@@ -209,20 +212,41 @@ public class DmCheckController {
         return alertMessage;
     }
 
+    private String checkPointSetting(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList) {
+        String alertMessage = "【カムバックのポイント設定抜け】\n";
+
+        for (OrderCheckListEntity order : orderCheckList) {
+            // カムバックの注文の判別を行う
+            boolean isComeback = false;
+            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+                if (comebackItemcodeList.contains(detail.getItemCode())) {
+                    isComeback = true;
+                    break;
+                }
+            }
+
+            // カムバックの受注で受注区分が7でない場合はNGとする
+            if (isComeback && !StringUtils.equals(order.getDivOrder(), "7")) {
+                alertMessage += order.getOrderNo() + "\n";
+            }
+        }
+
+        return alertMessage;
+    }
+
     private String checkPostageComeback(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList) {
         String alertMessage = "【カムバックの送料抜け】\n";
 
         for (OrderCheckListEntity order : orderCheckList) {
             // カムバックの注文の判別を行う
             boolean isComeback = false;
-            if (StringUtils.equals("829", order.getEventCode()) || StringUtils.equals("830", order.getEventCode())) {
-                for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                    if (comebackItemcodeList.contains(detail.getItemCode())) {
-                        isComeback = true;
-                        break;
-                    }
+            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+                if (comebackItemcodeList.contains(detail.getItemCode())) {
+                    isComeback = true;
+                    break;
                 }
             }
+
             // カムバックの注文と判定された場合、送料削除漏れチェックを実施する。
             if (isComeback) {
                 boolean isError = false;
@@ -251,18 +275,19 @@ public class DmCheckController {
         return alertMessage;
     }
 
-    private String checkPresentComeback(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList) {
+    private String checkPresentComeback(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList,
+            String presentItemCode) {
         String alertMessage = "【カムバックのプレゼント抜け】\n";
 
         for (OrderCheckListEntity order : orderCheckList) {
             // カムバックの注文の判別を行う
             boolean isComeback = false;
-            if (StringUtils.equals("829", order.getEventCode()) || StringUtils.equals("830", order.getEventCode())) {
-                for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                    if (comebackItemcodeList.contains(detail.getItemCode())) {
-                        isComeback = true;
-                        break;
-                    }
+
+            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+                // 該当商品を注文していればカムバックの受注とする
+                if (comebackItemcodeList.contains(detail.getItemCode())) {
+                    isComeback = true;
+                    break;
                 }
             }
 
@@ -270,7 +295,7 @@ public class DmCheckController {
             if (isComeback) {
                 boolean isError = true;
                 for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                    if (StringUtils.equals(detail.getItemCode(), "241031")) {
+                    if (StringUtils.equals(detail.getItemCode(), presentItemCode)) {
                         isError = false;
                     }
                 }
@@ -292,24 +317,31 @@ public class DmCheckController {
      * @param string
      * @return
      */
-    private String checkPresent(List<OrderCheckListEntity> orderCheckList, int thresholdPrice, String presentItemCode,
+    private String checkItemCodeAndPostage(List<OrderCheckListEntity> orderCheckList, int thresholdPrice,
+            String presentItemCode,
             List<String> excludeEventCodeList, List<String> targetEventCodeList) {
 
-        String alertMessage = "【" + thresholdPrice + "円以上購入の際のプレゼント(" + presentItemCode + ")抜け】\n";
+        String alertMessage = "【" + thresholdPrice + "円以上購入の際のコード(" + presentItemCode + ")抜け、送料無料対応抜け】\n";
 
         for (OrderCheckListEntity entity : orderCheckList) {
-            if (entity.getTotalEarnings() >= thresholdPrice && !excludeEventCodeList.contains(entity.getEventCode())
-                    && (targetEventCodeList.isEmpty() || targetEventCodeList.contains(entity.getEventCode()))
-                    && !StringUtils.equals(entity.getCoolDiv(), "冷凍")) {
-                boolean isError = true;
+            if (entity.getTotalEarnings() >= thresholdPrice
+                    && (excludeEventCodeList == null || !excludeEventCodeList.contains(entity.getEventCode()))
+                    && (targetEventCodeList == null || targetEventCodeList.contains(entity.getEventCode()))) {
+                // 該当料金以上の購入かつ、対象外イベントコードではないかつ、対象イベントコードの場合
+
+                boolean isItemCodeNG = true;
+                boolean isPostageNG = true;
                 for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
                     if (StringUtils.equals(detail.getItemCode(), presentItemCode)) {
-                        isError = false;
-                        break;
+                        isItemCodeNG = false;
+                    }
+
+                    if (StringUtils.equals("運賃", detail.getBreakdownName()) && detail.getSubTotal() == 0) {
+                        isPostageNG = false;
                     }
                 }
 
-                if (isError) {
+                if (isItemCodeNG || isPostageNG) {
                     alertMessage += entity.getOrderNo() + "\n";
                 }
             }
@@ -444,6 +476,8 @@ public class DmCheckController {
                 Integer unitPrice = Integer.parseInt(split[keyMap.get("税込単価")]);
                 Integer quantity = Integer.parseInt(split[keyMap.get("数量")]);
                 Integer detailsSubTotal = Integer.parseInt(split[keyMap.get("税込金額")]);
+                // 受注区分はファイル内に2箇所あるので、直接数字でindexを指定
+                String divOrder = split[88];
                 OrderCheckListDetailsEntity detailsEntity = new OrderCheckListDetailsEntity(breakdownName,
                         itemCode, itemName, unitPrice, quantity, detailsSubTotal);
 
@@ -471,7 +505,8 @@ public class DmCheckController {
                             || StringUtils.equals(breakdownName, "ポイント利用")) {
                         subtotal = subtotal - detailsSubTotal;
                     }
-                    OrderCheckListEntity newEntity = new OrderCheckListEntity(orderNo, buyerCode, buyerTel, destTel,
+                    OrderCheckListEntity newEntity = new OrderCheckListEntity(orderNo, divOrder, buyerCode, buyerTel,
+                            destTel,
                             subtotal,
                             destPrefecture, orderMemo, eventNo,
                             eventName,
