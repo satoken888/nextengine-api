@@ -56,7 +56,7 @@ public class DmCheckController {
         // 後払い手数料のチェック処理
         alertMessage += checkDeferredFee(orderCheckList);
 
-        // ●●●円以上購入の際のプレゼント抜けチェック
+        // ６４８０円以上１０８００円未満の購入の場合に商品コード250110が入っているか確認
         alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250110", null,
                 Arrays.asList("837"));
 
@@ -324,15 +324,24 @@ public class DmCheckController {
         String alertMessage = "【" + thresholdPrice + "円以上購入の際のコード(" + presentItemCode + ")抜け、送料無料対応抜け】\n";
 
         for (OrderCheckListEntity entity : orderCheckList) {
-            if (entity.getTotalEarnings() >= thresholdPrice
+
+            boolean existShippingIncludedItem = entity.getDetailsList().stream()
+                    .filter(l -> StringUtils.contains(l.getItemName(), "送料")).count() > 0 ? true : false;
+
+            if (entity.getTotalEarnings() >= thresholdPrice && entity.getTotalEarnings() <= 10800
                     && (excludeEventCodeList == null || !excludeEventCodeList.contains(entity.getEventCode()))
-                    && (targetEventCodeList == null || targetEventCodeList.contains(entity.getEventCode()))) {
-                // 該当料金以上の購入かつ、対象外イベントコードではないかつ、対象イベントコードの場合
+                    && (targetEventCodeList == null || targetEventCodeList.contains(entity.getEventCode()))
+                    && !existShippingIncludedItem) {
+                // 該当料金以上の購入かつ、対象外イベントコードではないかつ、対象イベントコードかつ、送料込商品を含んでいない場合
 
                 boolean isItemCodeNG = true;
                 boolean isPostageNG = true;
                 for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
-                    if (StringUtils.equals(detail.getItemCode(), presentItemCode)) {
+
+                    if (StringUtils.equals(detail.getItemCode(), presentItemCode)
+                            || StringUtils.equals(detail.getItemCode(), "7363")
+                            || StringUtils.equals(detail.getItemCode(), "7364")) {
+                        // プレゼントのコードが含まれているまたは、福麺箱・具付福麺箱を購入の場合はプレゼントコード不要とする
                         isItemCodeNG = false;
                     }
 
@@ -342,6 +351,22 @@ public class DmCheckController {
                 }
 
                 if (isItemCodeNG || isPostageNG) {
+                    alertMessage += entity.getOrderNo() + "\n";
+                }
+            } else if (entity.getTotalEarnings() < thresholdPrice
+                    && (excludeEventCodeList == null || !excludeEventCodeList.contains(entity.getEventCode()))
+                    && (targetEventCodeList == null || targetEventCodeList.contains(entity.getEventCode()))
+                    && !existShippingIncludedItem) {
+                // 該当金額未満の場合は送料が付与されているかチェックする。
+                boolean isError = false;
+                for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
+                    if (StringUtils.equals("運賃", detail.getBreakdownName()) && detail.getSubTotal() == 0) {
+                        isError = true;
+                        break;
+                    }
+                }
+
+                if (isError) {
                     alertMessage += entity.getOrderNo() + "\n";
                 }
             }
