@@ -231,6 +231,8 @@ public class DmCheckController {
             }
         }
 
+        alertMessage += "\n";
+
         return alertMessage;
     }
 
@@ -498,9 +500,13 @@ public class DmCheckController {
                 String breakdownName = split[keyMap.get("内訳名称")];
                 String itemCode = split[keyMap.get("商品ｺｰﾄﾞ")];
                 String itemName = split[keyMap.get("商品名称")];
-                Integer unitPrice = Integer.parseInt(split[keyMap.get("税込単価")]);
-                Integer quantity = Integer.parseInt(split[keyMap.get("数量")]);
-                Integer detailsSubTotal = Integer.parseInt(split[keyMap.get("税込金額")]);
+
+                String zeikomiPrice = split[keyMap.get("税込単価")];
+                String numPerchase = split[keyMap.get("数量")];
+                String zeikomiTotal = split[keyMap.get("税込金額")];
+                Integer unitPrice = StringUtils.isEmpty(zeikomiPrice) ? 0 : Integer.parseInt(zeikomiPrice);
+                Integer quantity = StringUtils.isEmpty(numPerchase) ? 0 : Integer.parseInt(numPerchase);
+                Integer detailsSubTotal = StringUtils.isEmpty(zeikomiTotal) ? 0 : Integer.parseInt(zeikomiTotal);
                 // 受注区分はファイル内に2箇所あるので、直接数字でindexを指定
                 String divOrder = split[88];
                 OrderCheckListDetailsEntity detailsEntity = new OrderCheckListDetailsEntity(breakdownName,
