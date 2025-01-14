@@ -24,12 +24,12 @@ public final class Constant {
 	public static final List<String> COMEBACK_ITEMCODE_LIST;
 	static {
 		List<String> list = new ArrayList<String>();
-		list.add("7363s");
 		list.add("0288s");
 		list.add("0200s");
 		list.add("0201s");
 		list.add("7404s");
 		list.add("7400s");
+		list.add("6400");
 		COMEBACK_ITEMCODE_LIST = Collections.unmodifiableList(list);
 	}
 

@@ -60,14 +60,19 @@ public class DmCheckController {
         alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250110", null,
                 Arrays.asList("837"));
 
-        // カムバックのプレゼントチェック
-        alertMessage += checkPresentComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST, "241229");
-
         // カムバックの送料チェック
-        alertMessage += checkPostageComeback(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
+        alertMessage += checkPostageComeback(orderCheckList);
+
+        // カムバックのプレゼントチェック
+        alertMessage += checkPresentComeback(orderCheckList,
+                Constant.COMEBACK_ITEMCODE_LIST, Arrays.asList("250210a", "250210b"));
+
+        // カムバックのクーポンコードが入力されていた場合の送料チェック
+        alertMessage += checkPostageComebackCoupon(orderCheckList, Arrays.asList("250210a", "250210b"));
 
         // カムバックのポイント設定抜けチェック
-        alertMessage += checkPointSetting(orderCheckList, Constant.COMEBACK_ITEMCODE_LIST);
+        // alertMessage += checkPointSetting(orderCheckList,
+        // Constant.COMEBACK_ITEMCODE_LIST);
 
         // 新規ハガキのプレゼント抜けチェック
         alertMessage += checkNewPostcardPresent(orderCheckList);
@@ -80,6 +85,47 @@ public class DmCheckController {
 
         // 改行コードをHTML用に変換する
         alertMessage = convertLineBreakCode(alertMessage);
+
+        return alertMessage;
+    }
+
+    private String checkPostageComebackCoupon(List<OrderCheckListEntity> orderCheckList, List<String> couponCode) {
+        String alertMessage = "【カムバッククーポンコード入力されているが送料入ってる】\n";
+
+        boolean existComebackCoupon = false;
+
+        for (OrderCheckListEntity order : orderCheckList) {
+            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+                if (couponCode.contains(detail.getItemCode())) {
+                    existComebackCoupon = true;
+                    break;
+                }
+            }
+
+            // カムバックのクーポンコードが入力されていた場合、送料削除漏れチェックを実施する。
+            if (existComebackCoupon) {
+                boolean isError = false;
+                for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+                    if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 0
+                            && !StringUtils.equals("沖縄県", order.getDestPrefecture())) {
+                        // 受注内容が沖縄県への送り先ではなく、なおかつ送料無料になっていない場合
+                        isError = true;
+                        break;
+                    } else if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 2020
+                            && StringUtils.equals("沖縄県", order.getDestPrefecture())) {
+                        // 受注う内容が沖縄県への送り先で、なおかつ送料が追加送料の2020円が追加されていない場合
+                        isError = true;
+                        break;
+
+                    }
+                }
+                if (isError) {
+                    alertMessage += order.getOrderNo() + "\n";
+                }
+            }
+        }
+
+        alertMessage += "\n";
 
         return alertMessage;
     }
@@ -236,18 +282,13 @@ public class DmCheckController {
         return alertMessage;
     }
 
-    private String checkPostageComeback(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList) {
+    private String checkPostageComeback(List<OrderCheckListEntity> orderCheckList) {
         String alertMessage = "【カムバックの送料抜け】\n";
 
         for (OrderCheckListEntity order : orderCheckList) {
             // カムバックの注文の判別を行う
-            boolean isComeback = false;
-            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                if (comebackItemcodeList.contains(detail.getItemCode())) {
-                    isComeback = true;
-                    break;
-                }
-            }
+            boolean isComeback = StringUtils.equals(order.getEventCode(), "839")
+                    || StringUtils.equals(order.getEventCode(), "838");
 
             // カムバックの注文と判定された場合、送料削除漏れチェックを実施する。
             if (isComeback) {
@@ -278,27 +319,29 @@ public class DmCheckController {
     }
 
     private String checkPresentComeback(List<OrderCheckListEntity> orderCheckList, List<String> comebackItemcodeList,
-            String presentItemCode) {
+            List<String> presentItemCodeList) {
         String alertMessage = "【カムバックのプレゼント抜け】\n";
 
         for (OrderCheckListEntity order : orderCheckList) {
             // カムバックの注文の判別を行う
-            boolean isComeback = false;
+            boolean isComeback = StringUtils.equals(order.getEventCode(), "839")
+                    || StringUtils.equals(order.getEventCode(), "838");
 
-            for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                // 該当商品を注文していればカムバックの受注とする
-                if (comebackItemcodeList.contains(detail.getItemCode())) {
-                    isComeback = true;
-                    break;
-                }
-            }
+            // for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
+            // // 該当商品を注文していればカムバックの受注とする
+            // if (comebackItemcodeList.contains(detail.getItemCode())) {
+            // isComeback = true;
+            // break;
+            // }
+            // }
 
             // カムバックの注文と判定された場合、プレゼント抜けチェックを実施する。
             if (isComeback) {
                 boolean isError = true;
                 for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
-                    if (StringUtils.equals(detail.getItemCode(), presentItemCode)) {
+                    if (presentItemCodeList.contains(detail.getItemCode())) {
                         isError = false;
+                        break;
                     }
                 }
                 if (isError) {
@@ -330,7 +373,7 @@ public class DmCheckController {
             boolean existShippingIncludedItem = entity.getDetailsList().stream()
                     .filter(l -> StringUtils.contains(l.getItemName(), "送料")).count() > 0 ? true : false;
 
-            if (entity.getTotalEarnings() >= thresholdPrice && entity.getTotalEarnings() <= 10800
+            if (entity.getTotalEarnings() >= thresholdPrice && entity.getTotalEarnings() < 10800
                     && (excludeEventCodeList == null || !excludeEventCodeList.contains(entity.getEventCode()))
                     && (targetEventCodeList == null || targetEventCodeList.contains(entity.getEventCode()))
                     && !existShippingIncludedItem) {
