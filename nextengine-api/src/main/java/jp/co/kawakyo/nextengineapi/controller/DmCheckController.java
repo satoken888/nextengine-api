@@ -92,9 +92,8 @@ public class DmCheckController {
     private String checkPostageComebackCoupon(List<OrderCheckListEntity> orderCheckList, List<String> couponCode) {
         String alertMessage = "【カムバッククーポンコード入力されているが送料入ってる】\n";
 
-        boolean existComebackCoupon = false;
-
         for (OrderCheckListEntity order : orderCheckList) {
+            boolean existComebackCoupon = false;
             for (OrderCheckListDetailsEntity detail : order.getDetailsList()) {
                 if (couponCode.contains(detail.getItemCode())) {
                     existComebackCoupon = true;
