@@ -53,7 +53,7 @@ public class DmCheckController {
     private String execCheckOrder(List<OrderCheckListEntity> orderCheckList) {
         String alertMessage = "";
 
-        alertMessage += "<h3>■期間限定チェック項目</h3>\n\n";
+        alertMessage += "<h3>■期間限定チェック項目</h3>\n";
 
         // ６４８０円以上１０８００円未満の購入の場合に商品コード250228aが入っている場合に送料無料になっているか
         alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250228a", null,
@@ -77,7 +77,7 @@ public class DmCheckController {
         // alertMessage += checkPointSetting(orderCheckList,
         // Constant.COMEBACK_ITEMCODE_LIST);
 
-        alertMessage += "<h3>■常設チェック項目</h3>\n\n";
+        alertMessage += "<h3>■常設チェック項目</h3>\n";
 
         // 後払い手数料のチェック処理
         alertMessage += checkDeferredFee(orderCheckList);
@@ -142,6 +142,8 @@ public class DmCheckController {
                 }
             }
         }
+
+        alertMessage += "\n";
 
         return alertMessage;
     }
