@@ -53,12 +53,15 @@ public class DmCheckController {
     private String execCheckOrder(List<OrderCheckListEntity> orderCheckList) {
         String alertMessage = "";
 
-        // 後払い手数料のチェック処理
-        alertMessage += checkDeferredFee(orderCheckList);
+        alertMessage += "<h3>■期間限定チェック項目</h3>\n\n";
 
-        // ６４８０円以上１０８００円未満の購入の場合に商品コード250110が入っているか確認
-        alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250110", null,
-                Arrays.asList("837"));
+        // ６４８０円以上１０８００円未満の購入の場合に商品コード250228aが入っている場合に送料無料になっているか
+        alertMessage += checkItemCodeAndPostage(orderCheckList, 6480, "250228a", null,
+                Arrays.asList("840"));
+
+        // おかわり新規の購入数に伴うエラー判定処理
+        alertMessage += checkTotalItemCountPresent(orderCheckList,
+                Arrays.asList("0288", "0200", "0201", "7361", "7365", "7400"));
 
         // カムバックの送料チェック
         alertMessage += checkPostageComeback(orderCheckList);
@@ -74,6 +77,11 @@ public class DmCheckController {
         // alertMessage += checkPointSetting(orderCheckList,
         // Constant.COMEBACK_ITEMCODE_LIST);
 
+        alertMessage += "<h3>■常設チェック項目</h3>\n\n";
+
+        // 後払い手数料のチェック処理
+        alertMessage += checkDeferredFee(orderCheckList);
+
         // 新規ハガキのプレゼント抜けチェック
         alertMessage += checkNewPostcardPresent(orderCheckList);
 
@@ -85,6 +93,55 @@ public class DmCheckController {
 
         // 改行コードをHTML用に変換する
         alertMessage = convertLineBreakCode(alertMessage);
+
+        return alertMessage;
+    }
+
+    private String checkTotalItemCountPresent(List<OrderCheckListEntity> orderCheckList,
+            List<String> targetItemCodeList) {
+        String alertMessage = "【おかわり(新規)入力エラー】\n";
+
+        for (OrderCheckListEntity entity : orderCheckList) {
+            if (StringUtils.equals(entity.getEventCode(), "841")) {
+                // 該当商品の購入個数をカウント
+                int targetItemCount = 0;
+                for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
+                    if (StringUtils.equals(detail.getBreakdownName(), "受注")
+                            && targetItemCodeList.contains(detail.getItemCode())) {
+                        targetItemCount += detail.getQuantity();
+                    }
+                }
+
+                boolean isError = false;
+                if (targetItemCount >= 2) {
+                    // 該当商品を２個以上購入している場合,送料無料でなおかつプレゼントが付与されていること
+                    boolean isPostageOK = false;
+                    boolean isPresentOK = false;
+                    for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
+                        if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() == 0) {
+                            isPostageOK = true;
+                        }
+                        if (StringUtils.equals(detail.getItemCode(), "250228b")) {
+                            isPresentOK = true;
+                        }
+                    }
+                    if (!isPostageOK || !isPresentOK) {
+                        isError = true;
+                    }
+                } else {
+                    // 該当商品の購入個数が１個以下の場合、送料が３４０円出なかったらNGとする
+                    for (OrderCheckListDetailsEntity detail : entity.getDetailsList()) {
+                        if (StringUtils.equals(detail.getBreakdownName(), "運賃") && detail.getSubTotal() != 340) {
+                            isError = true;
+                        }
+                    }
+                }
+
+                if (isError) {
+                    alertMessage += entity.getOrderNo() + "\n";
+                }
+            }
+        }
 
         return alertMessage;
     }
@@ -209,6 +266,9 @@ public class DmCheckController {
         return alertMessage;
     }
 
+    /**
+     * 改行コードをHTMLタグの改行タグに変換する
+     */
     private String convertLineBreakCode(String alertMessage) {
         return alertMessage.replace("\n", "<br />");
     }
